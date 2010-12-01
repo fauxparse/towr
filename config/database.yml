@@ -1,0 +1,18 @@
+development: &development
+  adapter: postgresql
+  database: towr
+  username: postgres
+  pool: 5
+  timeout: 5000
+  min_messages: warning
+
+test:
+  adapter: postgresql
+  database: towr_test
+  username: postgres
+  pool: 5
+  timeout: 5000
+  min_messages: warning
+
+production:
+  <<: *development
