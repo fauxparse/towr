@@ -1,4 +1,8 @@
-<div id="editor">
+<div class="map editor">
+  <div class="info">
+    <h2>Untitled map</h2>
+    <h3>by <strong>@fauxparse</strong></h3>
+  </div>
   <%= field @map %>
 </div>
 
@@ -26,73 +30,24 @@
           handle: this.resizeHandle,
           limit: { x:[this.cellSize * 5, this.cellSize * 32], y:[this.cellSize * 5, this.cellSize * 32] },
           onDrag: function(element, event) {
-            var size = element.getSize();
-            self.resizeTo(Math.floor(size.y / self.cellSize), Math.floor(size.x / self.cellSize));
+            var size = element.getComputedSize();
+            self.resizeTo(Math.floor(size.height / self.cellSize), Math.floor(size.width / self.cellSize));
           }
         });
         
-        this.undoStack = [];
-        this.redoStack = [];
+        this.createToolbar();
+        
         this.drawing = false;
         this.field.addEvent('mousedown:relay(.cell)', function(event, cell) {
-          var cp = cell.getPosition(),
-              q = self._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y);
-
-          if (q) {
-            var x = cell.x * 2 + ((q == NORTH || q == SOUTH) ? 1 : 0) + (q == EAST ? 2 : 0),
-                y = cell.y * 2 + ((q == WEST || q == EAST) ? 1 : 0) + (q == SOUTH ? 2 : 0);
-            self.startDrawing([x, y]);
-          }
+          if (self.selectedTool) self.selectedTool.mouseDown(event, cell);
         }).addEvent('mousemove:relay(.cell)', function(event, cell) {
-          if (self.drawing) {
-            var cp = cell.getPosition(),
-                q = self._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y);
-
-            if (q) {
-              var x = cell.x * 2 + ((q == NORTH || q == SOUTH) ? 1 : 0) + (q == EAST ? 2 : 0),
-                  y = cell.y * 2 + ((q == WEST || q == EAST) ? 1 : 0) + (q == SOUTH ? 2 : 0),
-                  p = [ x, y ],
-                  l = self.drawing.getLast();
-              if (p[0] != l[0] || p[1] != l[1]) {
-                self.drawing.push(p);
-                
-                var first = self.drawing.shift();
-                var second = self.drawing[0];
-                var x1 = first[0], y1 = first[1], x2 = second[0], y2 = second[1];
-                var dx = Math.abs(x2 - x1), dy = Math.abs(y2 - y1);
-                if ((dx <= 2 && dy <= 2) && !(((x1 == x2) && (y1 % 2)) || ((y1 == y2) && (x1 % 2)))) {
-                  var cx = Math.floor((x1 + x2) / 4), cy = Math.floor((y1 + y2) / 4);
-                  var cx1 = x1 - (cx * 2), cy1 = y1 - (cy * 2),
-                      cx2 = x2 - (cx * 2), cy2 = y2 - (cy * 2);
-                  var p1 = cx1 == 1 ? (cy1 ? SOUTH : NORTH) : (cx1 ? EAST : WEST);
-                  var p2 = cx2 == 1 ? (cy2 ? SOUTH : NORTH) : (cx2 ? EAST : WEST);
-
-                  self.field.getElements('.row:nth-child(' + (cy + 1) + ')')[0].getElements('.cell:nth-child(' + (cx + 1) + ')')
-                    .addClass('route-' + (p1 + p2));
-                  self.draw();
-                } else {
-                  self.drawing.shift();
-                  self.drawing.unshift(first);
-                }
-              }
-            }
-          }
+          if (self.selectedTool) self.selectedTool.mouseMove(event, cell);
         }).addEvent('mouseup:relay(.cell)', function(event, cell) {
-          if (self.drawing) {
-            self.stopDrawing();
-          }
+          if (self.selectedTool) self.selectedTool.mouseUp(event, cell);
         })
-        .addEvent('mouseLeave', function() {
-          if (self.drawing) {
-            self.stopDrawing();
-          }
+        .addEvent('mouseLeave', function(event) {
+          if (self.selectedTool) self.selectedTool.mouseLeave();
         });
-      },
-      startDrawing: function() {
-        this.drawing = $A(arguments);
-      },
-      stopDrawing: function() {
-        this.drawing = false;
       },
       resizeTo: function(rows, columns) {
         var self = this;
@@ -173,20 +128,142 @@
           }
         }
       },
-      _cellQuadrant: function(x, y) {
-        var r = 1.2 * this.cellSize / 4;
-        var dx = x - this.cellSize / 2, dl = x, dr = this.cellSize - x;
-        var dy = y - this.cellSize / 2, dt = y, db = this.cellSize - y;
-        if (Math.sqrt(dx * dx + dt * dt) < r) { return NORTH; }
-        if (Math.sqrt(dx * dx + db * db) < r) { return SOUTH; }
-        if (Math.sqrt(dy * dy + dl * dl) < r) { return WEST; }
-        if (Math.sqrt(dy * dy + dr * dr) < r) { return EAST; }
-        return false;
+      createToolbar: function() {
+        this.toolPalette = new Element('div', {
+          'class': 'toolbar'
+        }).inject(this.element);
+        for (i in Editor.Tools) {
+          new (Editor.Tools[i])(this);
+        }
+        this.toolPalette.getElements('.tool')[0].fireEvent('click');
       }
     });
     
+    var Tool = new Class({
+      initialize: function(editor) {
+        var self = this;
+        this.editor = editor;
+        this.button = new Element('div', {
+          'class':'tool ' + this.Name,
+          html:this.Caption,
+          title:this.Name
+        }).inject(this.editor.toolPalette)
+        .addEvent('click', function() {
+          if (!(this.hasClass('active'))) {
+            if (self.editor.selectedTool) {
+              self.editor.selectedTool.stopEditing();
+            }
+            self.startEditing();
+          }
+        });
+      },
+      startEditing: function() {
+        this.button.addClass('selected');
+        this.editor.selectedTool = this;
+        return this;
+      },
+      stopEditing: function() {
+        this.button.removeClass('selected');
+        this.editor.selectedTool = false;
+        return this;
+      },
+      startDrawing: function() {
+        this.drawing = $A(arguments);
+      },
+      stopDrawing: function() {
+        this.drawing = false;
+      },
+      mouseDown: function(event, cell) {
+        if (!this.drawing) { this.startDrawing(); }
+      },
+      mouseUp: function(event, cell) {
+        if (this.drawing) { this.stopDrawing(); }
+      },
+      mouseMove: function(event, cell) {},
+      mouseLeave: function(event) {
+        if (this.drawing) { this.stopDrawing(); }
+      }
+    });
+  
+    Editor.Tools = {
+      Draw: new Class({
+        Extends: Tool,
+        Name: 'Draw',
+        Caption: '✎',
+        mouseDown: function(event, cell) {
+          var cp = cell.getPosition(),
+              q = this._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y);
+          if (q) {
+            var x = cell.x * 2 + ((q == NORTH || q == SOUTH) ? 1 : 0) + (q == EAST ? 2 : 0),
+                y = cell.y * 2 + ((q == WEST || q == EAST) ? 1 : 0) + (q == SOUTH ? 2 : 0);
+            this.startDrawing([x, y]);
+          }
+        },
+        mouseMove: function(event, cell) {
+          if (this.drawing) {
+            var cp = cell.getPosition(),
+                q = this._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y);
+
+            if (q) {
+              var x = cell.x * 2 + ((q == NORTH || q == SOUTH) ? 1 : 0) + (q == EAST ? 2 : 0),
+                  y = cell.y * 2 + ((q == WEST || q == EAST) ? 1 : 0) + (q == SOUTH ? 2 : 0),
+                  p = [ x, y ],
+                  l = this.drawing.getLast();
+              if (p[0] != l[0] || p[1] != l[1]) {
+                this.drawing.push(p);
+                
+                var first = this.drawing.shift();
+                var second = this.drawing[0];
+                var x1 = first[0], y1 = first[1], x2 = second[0], y2 = second[1];
+                var dx = Math.abs(x2 - x1), dy = Math.abs(y2 - y1);
+                if ((dx <= 2 && dy <= 2) && !(((x1 == x2) && (y1 % 2)) || ((y1 == y2) && (x1 % 2)))) {
+                  var cx = Math.floor((x1 + x2) / 4), cy = Math.floor((y1 + y2) / 4);
+                  var cx1 = x1 - (cx * 2), cy1 = y1 - (cy * 2),
+                      cx2 = x2 - (cx * 2), cy2 = y2 - (cy * 2);
+                  var p1 = cx1 == 1 ? (cy1 ? SOUTH : NORTH) : (cx1 ? EAST : WEST);
+                  var p2 = cx2 == 1 ? (cy2 ? SOUTH : NORTH) : (cx2 ? EAST : WEST);
+
+                  this.editor.field.getElements('.row:nth-child(' + (cy + 1) + ')')[0].getElements('.cell:nth-child(' + (cx + 1) + ')')
+                    .addClass('route-' + (p1 + p2));
+                  this.editor.draw();
+                } else {
+                  this.drawing.shift();
+                  this.drawing.unshift(first);
+                }
+              }
+            }
+          }
+        },
+        _cellQuadrant: function(x, y) {
+          var r = this.editor.cellSize / 3;
+          var dx = x - this.editor.cellSize / 2, dl = x, dr = this.editor.cellSize - x;
+          var dy = y - this.editor.cellSize / 2, dt = y, db = this.editor.cellSize - y;
+          if (Math.sqrt(dx * dx + dt * dt) < r) { return NORTH; }
+          if (Math.sqrt(dx * dx + db * db) < r) { return SOUTH; }
+          if (Math.sqrt(dy * dy + dl * dl) < r) { return WEST; }
+          if (Math.sqrt(dy * dy + dr * dr) < r) { return EAST; }
+          return false;
+        }
+      }),
+      Erase: new Class({
+        Extends: Tool,
+        Name: 'Erase',
+        Caption: '✄',
+        mouseMove: function(event, cell) {
+          if (this.drawing) {
+            cell.set({ 'class':'cell', html:'' });
+            this.editor.draw();
+          }
+        },
+        mouseDown: function(event, cell) {
+          this.parent(event, cell);
+          this.mouseMove(event, cell);
+        }
+      }),
+    }
+    
     window.addEvent('domready', function() {
-      new Editor($('editor'));
+      new Editor($$('.map')[0]);
     });
     
   </script>

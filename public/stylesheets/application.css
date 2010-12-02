@@ -4,8 +4,13 @@
 	font-family: 'League Gothic';
 	src: url('/fonts/league-gothic/League_Gothic-webfont.eot');
 	src: local('☺'), url('/fonts/league-gothic/League_Gothic-webfont.woff') format('woff'), url('/fonts/league-gothic/League_Gothic-webfont.ttf') format('truetype'), url('/fonts/league-gothic/League_Gothic-webfont.svg#webfontpm5EArBj') format('svg');
-	font-weight: normal;
+	font-weight: bold;
 	font-style: normal;
+}
+
+#header .logo,
+h1, h2, h3 {
+  font-family: "League Gothic", "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 
 /*}}}*/
@@ -13,7 +18,7 @@
 /* Body styles {{{ */
 
 body {
-  background: #222;
+  background: #222 url(/images/noise.png);
   color: #eee;
   margin: 0px;
   padding: 0px;
@@ -30,16 +35,16 @@ body, input, select, textarea, td {
 #header {
   height: 64px;
   padding: 16px 64px;
-  background: #222;
 }
 
 #header .logo {
   position: relative;
-  font: 64px/64px "League Gothic", sans-serif;
+  font-size: 64px;
+  line-height: 64px;
   color: #eee;
   text-decoration: none;
   text-transform: uppercase;
-  text-shadow: rgba(0, 0, 0, 0.5) 0px -1px 1px, rgba(255, 255, 255, 0.25) 0px 1px 1px;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 4px;
 }
 
 #header .logo small {
@@ -58,4 +63,57 @@ body, input, select, textarea, td {
   border-bottom: 1px solid #111;
 }
 
+.map .info {
+  position: absolute;
+  left: 0px;
+  top: -56px;
+  right: 0px;
+  height: 32px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+}
+
+.map .info:after {
+  content: '.';
+  text-indent: -10em;
+  overflow: hidden;
+  position: absolute;
+  left: 32px;
+  top: 48px;
+  width: 0px;
+  height: 0px;
+  border-top: 8px solid rgba(0, 0, 0, 0.5);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+
+.map .info h2,
+.map .info h3 {
+  margin: 0px;
+  float: left;
+  font-size: 32px;
+  line-height: 32px;
+  vertical-align: bottom;
+  text-transform: uppercase;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 1px;
+}
+
+.map .info h3 {
+  float: right;
+  font-size: 28px;
+  color: #333;
+}
+
+.map .info h3 strong { color: #666; }
+
 /*}}}*/
+
+/* Footer {{{ */
+
+#footer {
+  min-height: 128px;
+}
+
+/* }}} */

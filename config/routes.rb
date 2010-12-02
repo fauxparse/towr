@@ -1,5 +1,5 @@
 Towr::Application.routes.draw do
-  resources :maps
+  get "new" => "maps#new", :as => :new_map
   
   get ":id" => "maps#show"
 end
