@@ -1,2 +1,179 @@
-<h1>Maps#new</h1>
-<p>Find me in app/views/maps/new.html.erb</p>
+<div id="editor">
+  <%= field @map %>
+</div>
+
+<% content_for :scripts do %>
+  <script type="text/javascript" charset="utf-8">
+    var NORTH = 1, EAST = 2, SOUTH = 4, WEST = 8;
+  
+    var Editor = new Class({
+      initialize: function(element) {
+        var self = this;
+        this.element = element;
+        this.field = element.getElements('.field')[0];
+        this.canvas = new Element('canvas')
+          .inject(this.field)
+          .addEvent('draw', function() {
+            self.draw();
+          });
+        this.cellSize = this.field.getElements('.cell')[0].getSize().x;
+        this.resizeTo(this.field.getChildren('.row').length, this.field.getChildren('.row')[0].getChildren('.cell').length);
+        this.element.setStyles({ width: (this.columns * this.cellSize) + 'px' });
+        this.resizeHandle = new Element('div', { 'class':'resize' })
+          .inject(this.element);
+        this.element.makeResizable({
+          grid: 32,
+          handle: this.resizeHandle,
+          limit: { x:[this.cellSize * 5, this.cellSize * 32], y:[this.cellSize * 5, this.cellSize * 32] },
+          onDrag: function(element, event) {
+            var size = element.getSize();
+            self.resizeTo(Math.floor(size.y / self.cellSize), Math.floor(size.x / self.cellSize));
+          }
+        });
+        
+        this.undoStack = [];
+        this.redoStack = [];
+        this.drawing = false;
+        this.field.addEvent('mousedown:relay(.cell)', function(event, cell) {
+          self.currentLine = [];
+          self.drawing = true;
+          var cp = cell.getPosition();
+          cell.quadrant = self._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y);
+          self.currentLine.push([cell, cell.quadrant]);
+        }).addEvent('mouseenter:relay(.cell)', function(event, cell) {
+          if (self.drawing) {
+            var last = self.currentLine.getLast();
+            var d = (last[0].x < cell.x) ? WEST : (last[0].x > cell.x ? EAST : (last[0].y < cell.y ? NORTH : SOUTH));
+            self.currentLine.push([cell, d]);
+          }
+        }).addEvent('mouseleave:relay(.cell)', function(event, cell) {
+          if (self.drawing) {
+            var cp = cell.getPosition(),
+                q = self._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y),
+                last = self.currentLine.pop();
+            last.push(q);
+            self.currentLine.push(last);
+            self.currentLine.each(function(segment) {
+              segment[0].addClass('route-' + (segment[1] + segment[2]));
+            });
+            self.draw();
+            
+            var fp = self.field.getPosition(), s = self.field.getSize();
+            var xx = event.client.x - fp.x, yy = event.client.y - fp.y;
+            if (xx < 0 || yy < 0 || xx > s.x || yy > s.y) {
+              self.drawing = false;
+              self.draw();
+              self.undoStack.push([ 'draw', self.currentLine ]);
+              self.currentLine = [];
+            }
+          }
+        }).addEvent('mouseup:relay(.cell)', function(event, cell) {
+          if (self.drawing) {
+            self.drawing = false;
+            var cp = cell.getPosition(),
+                q = self._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y),
+                last = self.currentLine.pop();
+            if (q != last[1]) {
+              d = q + last[1];
+              last.push(q);
+              self.currentLine.push(last);
+            }
+            self.currentLine.each(function(segment) {
+              segment[0].addClass('route-' + (segment[1] + segment[2]));
+            });
+            self.draw();
+            self.undoStack.push([ 'draw', self.currentLine ]);
+            self.currentLine = [];
+          }
+        });
+      },
+      resizeTo: function(rows, columns) {
+        var self = this;
+        this.rows = rows;
+        this.columns = columns;
+        
+        for (i = self.field.getElements('.row').length; i < self.rows; i++) {
+          new Element('div', { 'class':'row' }).inject(self.field);
+        }
+        var re = self.field.getElements('.row');
+        re.each(function(row, j) {
+          var l = row.getElements('.cell').length;
+          for (i = l; i < self.columns; i++) {
+            new Element('div', { 'class':'cell' }).inject(row);
+          }
+          var ce = row.getElements('.cell');
+          for (i = 0; i < ce.length; i++) {
+            ce[i].x = i;
+            ce[i].y = j;
+            i < self.columns ? ce[i].show() : ce[i].hide();
+          }
+        });
+        for (j = 0; j < re.length; j++) {
+          j < self.rows ? re[j].show() : re[j].hide();
+        }
+        this.canvas.fireEvent('draw');
+      },
+      draw: function() {
+        var self = this;
+        var w = this.columns * this.cellSize, h = this.rows * this.cellSize;
+        this.canvas.set('width', w).set('height', h);
+        var context = this.canvas.getContext('2d');
+        var re = this.field.getChildren('.row');
+        context.lineWidth = 16;
+        context.strokeStyle = "#ccc";
+        
+        for (j = 0; j < self.rows; j++) {
+          var ce = re[j].getChildren('.cell');
+          for (i = 0; i < self.columns; i++) {
+            var cell = ce[i];
+            var x = i * self.cellSize, y = j * self.cellSize;
+            $A(cell.classList).each(function(c) {
+              if (t = /route-(\d+)/.exec(c)) {
+                switch (parseInt(t[1])) {
+                  case 5:
+                    context.moveTo(x + self.cellSize / 2, y);
+                    context.lineTo(x + self.cellSize / 2, y + self.cellSize);
+                    context.stroke();
+                    break;
+                  case 10:
+                    context.moveTo(x, y + self.cellSize / 2);
+                    context.lineTo(x + self.cellSize, y + self.cellSize / 2);
+                    context.stroke();
+                    break;
+                  case 3:
+                    context.moveTo(x + self.cellSize / 2, y);
+                    context.arc(x + self.cellSize, y, self.cellSize / 2, Math.PI, Math.PI / 2, true);
+                    context.stroke();
+                    break;
+                  case 6:
+                    context.moveTo(x + self.cellSize, y + self.cellSize / 2);
+                    context.arc(x + self.cellSize, y + self.cellSize, self.cellSize / 2, Math.PI * 1.5, Math.PI, true);
+                    context.stroke();
+                    break;
+                  case 9:
+                    context.moveTo(x, y + self.cellSize / 2);
+                    context.arc(x, y, self.cellSize / 2, Math.PI / 2, 0, true);
+                    context.stroke();
+                    break;
+                  case 12:
+                    context.moveTo(x + self.cellSize / 2, y + self.cellSize);
+                    context.arc(x, y + self.cellSize, self.cellSize / 2, 0, Math.PI * 1.5, true);
+                    context.stroke();
+                    break;
+                }
+              }
+            });
+          }
+        }
+      },
+      _cellQuadrant: function(x, y) {
+        return (x > y) ? ((this.cellSize - x > y) ? NORTH : EAST) : ((this.cellSize - x > y) ? WEST : SOUTH);
+      }
+    });
+    
+    window.addEvent('domready', function() {
+      new Editor($('editor'));
+    });
+    
+  </script>
+<% end %>
