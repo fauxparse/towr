@@ -35,57 +35,64 @@
         this.redoStack = [];
         this.drawing = false;
         this.field.addEvent('mousedown:relay(.cell)', function(event, cell) {
-          self.currentLine = [];
-          self.drawing = true;
-          var cp = cell.getPosition();
-          cell.quadrant = self._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y);
-          self.currentLine.push([cell, cell.quadrant]);
-        }).addEvent('mouseenter:relay(.cell)', function(event, cell) {
-          if (self.drawing) {
-            var last = self.currentLine.getLast();
-            var d = (last[0].x < cell.x) ? WEST : (last[0].x > cell.x ? EAST : (last[0].y < cell.y ? NORTH : SOUTH));
-            self.currentLine.push([cell, d]);
+          var cp = cell.getPosition(),
+              q = self._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y);
+
+          if (q) {
+            var x = cell.x * 2 + ((q == NORTH || q == SOUTH) ? 1 : 0) + (q == EAST ? 2 : 0),
+                y = cell.y * 2 + ((q == WEST || q == EAST) ? 1 : 0) + (q == SOUTH ? 2 : 0);
+            self.startDrawing([x, y]);
           }
-        }).addEvent('mouseleave:relay(.cell)', function(event, cell) {
+        }).addEvent('mousemove:relay(.cell)', function(event, cell) {
           if (self.drawing) {
             var cp = cell.getPosition(),
-                q = self._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y),
-                last = self.currentLine.pop();
-            last.push(q);
-            self.currentLine.push(last);
-            self.currentLine.each(function(segment) {
-              segment[0].addClass('route-' + (segment[1] + segment[2]));
-            });
-            self.draw();
-            
-            var fp = self.field.getPosition(), s = self.field.getSize();
-            var xx = event.client.x - fp.x, yy = event.client.y - fp.y;
-            if (xx < 0 || yy < 0 || xx > s.x || yy > s.y) {
-              self.drawing = false;
-              self.draw();
-              self.undoStack.push([ 'draw', self.currentLine ]);
-              self.currentLine = [];
+                q = self._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y);
+
+            if (q) {
+              var x = cell.x * 2 + ((q == NORTH || q == SOUTH) ? 1 : 0) + (q == EAST ? 2 : 0),
+                  y = cell.y * 2 + ((q == WEST || q == EAST) ? 1 : 0) + (q == SOUTH ? 2 : 0),
+                  p = [ x, y ],
+                  l = self.drawing.getLast();
+              if (p[0] != l[0] || p[1] != l[1]) {
+                self.drawing.push(p);
+                
+                var first = self.drawing.shift();
+                var second = self.drawing[0];
+                var x1 = first[0], y1 = first[1], x2 = second[0], y2 = second[1];
+                var dx = Math.abs(x2 - x1), dy = Math.abs(y2 - y1);
+                if ((dx <= 2 && dy <= 2) && !(((x1 == x2) && (y1 % 2)) || ((y1 == y2) && (x1 % 2)))) {
+                  var cx = Math.floor((x1 + x2) / 4), cy = Math.floor((y1 + y2) / 4);
+                  var cx1 = x1 - (cx * 2), cy1 = y1 - (cy * 2),
+                      cx2 = x2 - (cx * 2), cy2 = y2 - (cy * 2);
+                  var p1 = cx1 == 1 ? (cy1 ? SOUTH : NORTH) : (cx1 ? EAST : WEST);
+                  var p2 = cx2 == 1 ? (cy2 ? SOUTH : NORTH) : (cx2 ? EAST : WEST);
+
+                  self.field.getElements('.row:nth-child(' + (cy + 1) + ')')[0].getElements('.cell:nth-child(' + (cx + 1) + ')')
+                    .addClass('route-' + (p1 + p2));
+                  self.draw();
+                } else {
+                  self.drawing.shift();
+                  self.drawing.unshift(first);
+                }
+              }
             }
           }
         }).addEvent('mouseup:relay(.cell)', function(event, cell) {
           if (self.drawing) {
-            self.drawing = false;
-            var cp = cell.getPosition(),
-                q = self._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y),
-                last = self.currentLine.pop();
-            if (q != last[1]) {
-              d = q + last[1];
-              last.push(q);
-              self.currentLine.push(last);
-            }
-            self.currentLine.each(function(segment) {
-              segment[0].addClass('route-' + (segment[1] + segment[2]));
-            });
-            self.draw();
-            self.undoStack.push([ 'draw', self.currentLine ]);
-            self.currentLine = [];
+            self.stopDrawing();
+          }
+        })
+        .addEvent('mouseLeave', function() {
+          if (self.drawing) {
+            self.stopDrawing();
           }
         });
+      },
+      startDrawing: function() {
+        this.drawing = $A(arguments);
+      },
+      stopDrawing: function() {
+        this.drawing = false;
       },
       resizeTo: function(rows, columns) {
         var self = this;
@@ -167,7 +174,14 @@
         }
       },
       _cellQuadrant: function(x, y) {
-        return (x > y) ? ((this.cellSize - x > y) ? NORTH : EAST) : ((this.cellSize - x > y) ? WEST : SOUTH);
+        var r = 1.2 * this.cellSize / 4;
+        var dx = x - this.cellSize / 2, dl = x, dr = this.cellSize - x;
+        var dy = y - this.cellSize / 2, dt = y, db = this.cellSize - y;
+        if (Math.sqrt(dx * dx + dt * dt) < r) { return NORTH; }
+        if (Math.sqrt(dx * dx + db * db) < r) { return SOUTH; }
+        if (Math.sqrt(dy * dy + dl * dl) < r) { return WEST; }
+        if (Math.sqrt(dy * dy + dr * dr) < r) { return EAST; }
+        return false;
       }
     });
     
