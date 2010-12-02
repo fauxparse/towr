@@ -28,6 +28,25 @@ body, input, select, textarea, td {
   font: 14px "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 
+body:after {
+  content: 'Coming soon';
+  background: #ec008c;
+  font: 24px "League Gothic", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  position: fixed;
+  left: -50px;
+  top: 76px;
+  width: 200px;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px -1px 1px;
+  -webkit-transform: rotate(-45deg);
+  -webkit-transform-origin: 40px 0px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 6px;
+  -moz-transform: rotate(-45deg);
+  -moz-transform-origin: 40px 0px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 6px;
+}
+
 /*}}}*/
 
 /* Header {{{ */
