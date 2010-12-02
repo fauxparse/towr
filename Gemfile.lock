@@ -1,3 +1,10 @@
+GIT
+  remote: git://github.com/flori/json.git
+  revision: 2c0f8d2c9b15a33b8d10ffcb1959aef54d320b57
+  ref: 2c0f8d
+  specs:
+    json_pure (1.4.6a)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -30,6 +37,7 @@ GEM
     activesupport (3.0.3)
     arel (2.0.6)
     builder (2.1.2)
+    colored (1.2)
     configuration (1.1.0)
     erubis (2.6.6)
       abstract (>= 1.0.0)
@@ -38,7 +46,6 @@ GEM
       launchy (~> 0.3.2)
       rest-client (>= 1.4.0, < 1.7.0)
     i18n (0.5.0)
-    json_pure (1.4.6)
     kgio (2.0.0)
     launchy (0.3.7)
       configuration (>= 0.0.5)
@@ -49,6 +56,7 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     mime-types (1.16)
+    oauth (0.4.4)
     pg (0.9.0)
     polyglot (0.3.1)
     rack (1.2.1)
@@ -84,7 +92,10 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  colored
   heroku
+  json_pure (= 1.4.6a)!
+  oauth
   pg
   rails (= 3.0.3)
   unicorn

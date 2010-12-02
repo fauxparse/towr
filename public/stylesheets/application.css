@@ -25,7 +25,9 @@
 }
 
 #header .logo,
-h1, h2, h3 {
+h1, h2, h3,
+#header .auth a.user,
+#header .auth a.with {
   font-family: "League Gothic", "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 
@@ -78,6 +80,7 @@ body:after {
   height: 64px;
   padding: 16px 64px;
   border-top: 4px solid rgba(236, 0, 140, 0.5);
+  position: relative;
 }
 
 #header .logo {
@@ -93,6 +96,71 @@ body:after {
 #header .logo small {
   font-size: 100%;
   color: #666;
+}
+
+#header .auth {
+  position: absolute;
+  right: 64px;
+  bottom: 0px;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 1px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px 16px;
+  -webkit-border-top-left-radius: 8px;
+  -webkit-border-top-right-radius: 8px;
+  -moz-border-top-left-radius: 8px;
+  -moz-border-top-right-radius: 8px;
+}
+
+#header .auth p,
+#header .auth a.logout {
+  display: block;
+  margin: 0px;
+  text-transform: uppercase;
+  color: #999;
+  text-decoration: none;
+}
+
+#header .auth a.logout {
+  text-align: right;
+}
+
+#header .auth a.logout:before {
+  content: '→ ';
+}
+
+#header .auth a:hover {
+  color: #eee;
+}
+
+#header .auth a {
+  clear: left;
+  -webkit-transition: color 0.25s ease-in;
+}
+
+#header .auth a.with,
+#header .auth a.user {
+  clear: none;
+  float: left;
+  text-transform: uppercase;
+  font-size: 200%;
+  line-height: 1em;
+  text-decoration: none;
+  margin-right: 8px;
+  padding-right: 8px;
+  border-right: 1px solid #444;
+  color: #999;
+}
+
+#header .auth a.with:hover,
+#header .auth a.user:hover {
+  color: #eee;
+}
+
+#header .auth a.with:last-child,
+#header .auth a.user:last-child {
+  margin-right: 0;
+  padding-right: 0;
+  border-right: none;
 }
 
 /*}}}*/
