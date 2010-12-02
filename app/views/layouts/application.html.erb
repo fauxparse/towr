@@ -13,10 +13,10 @@
     <%= yield %>
   </div>
   <div id="footer">
-    
+    &copy; 2010 <a href="http://matt-powell.org.nz">Matt Powell</a>.
   </div>
   
-  <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/mootools/1.3.0/mootools.js", "mootools-more", "rails" %>
+  <%= javascript_include_tag "mootools", "mootools-more", "rails" %>
   <%= yield :scripts %>
 </body>
 </html>

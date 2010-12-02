@@ -39,6 +39,7 @@
         
         this.drawing = false;
         this.field.addEvent('mousedown:relay(.cell)', function(event, cell) {
+          event.preventDefault();
           if (self.selectedTool) self.selectedTool.mouseDown(event, cell);
         }).addEvent('mousemove:relay(.cell)', function(event, cell) {
           if (self.selectedTool) self.selectedTool.mouseMove(event, cell);
@@ -197,6 +198,8 @@
             var x = cell.x * 2 + ((q == NORTH || q == SOUTH) ? 1 : 0) + (q == EAST ? 2 : 0),
                 y = cell.y * 2 + ((q == WEST || q == EAST) ? 1 : 0) + (q == SOUTH ? 2 : 0);
             this.startDrawing([x, y]);
+          } else {
+            this.startDrawing();
           }
         },
         mouseMove: function(event, cell) {
@@ -209,26 +212,28 @@
                   y = cell.y * 2 + ((q == WEST || q == EAST) ? 1 : 0) + (q == SOUTH ? 2 : 0),
                   p = [ x, y ],
                   l = this.drawing.getLast();
-              if (p[0] != l[0] || p[1] != l[1]) {
+              if (!l || p[0] != l[0] || p[1] != l[1]) {
                 this.drawing.push(p);
                 
-                var first = this.drawing.shift();
-                var second = this.drawing[0];
-                var x1 = first[0], y1 = first[1], x2 = second[0], y2 = second[1];
-                var dx = Math.abs(x2 - x1), dy = Math.abs(y2 - y1);
-                if ((dx <= 2 && dy <= 2) && !(((x1 == x2) && (y1 % 2)) || ((y1 == y2) && (x1 % 2)))) {
-                  var cx = Math.floor((x1 + x2) / 4), cy = Math.floor((y1 + y2) / 4);
-                  var cx1 = x1 - (cx * 2), cy1 = y1 - (cy * 2),
-                      cx2 = x2 - (cx * 2), cy2 = y2 - (cy * 2);
-                  var p1 = cx1 == 1 ? (cy1 ? SOUTH : NORTH) : (cx1 ? EAST : WEST);
-                  var p2 = cx2 == 1 ? (cy2 ? SOUTH : NORTH) : (cx2 ? EAST : WEST);
+                if (this.drawing.length > 1) {
+                  var first = this.drawing.shift();
+                  var second = this.drawing[0];
+                  var x1 = first[0], y1 = first[1], x2 = second[0], y2 = second[1];
+                  var dx = Math.abs(x2 - x1), dy = Math.abs(y2 - y1);
+                  if ((dx <= 2 && dy <= 2) && !(((x1 == x2) && (y1 % 2)) || ((y1 == y2) && (x1 % 2)))) {
+                    var cx = Math.floor((x1 + x2) / 4), cy = Math.floor((y1 + y2) / 4);
+                    var cx1 = x1 - (cx * 2), cy1 = y1 - (cy * 2),
+                        cx2 = x2 - (cx * 2), cy2 = y2 - (cy * 2);
+                    var p1 = cx1 == 1 ? (cy1 ? SOUTH : NORTH) : (cx1 ? EAST : WEST);
+                    var p2 = cx2 == 1 ? (cy2 ? SOUTH : NORTH) : (cx2 ? EAST : WEST);
 
-                  this.editor.field.getElements('.row:nth-child(' + (cy + 1) + ')')[0].getElements('.cell:nth-child(' + (cx + 1) + ')')
-                    .addClass('route-' + (p1 + p2));
-                  this.editor.draw();
-                } else {
-                  this.drawing.shift();
-                  this.drawing.unshift(first);
+                    this.editor.field.getElements('.row:nth-child(' + (cy + 1) + ')')[0].getElements('.cell:nth-child(' + (cx + 1) + ')')
+                      .addClass('route-' + (p1 + p2));
+                    this.editor.draw();
+                  } else {
+                    this.drawing.shift();
+                    this.drawing.unshift(first);
+                  }
                 }
               }
             }

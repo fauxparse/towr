@@ -8,10 +8,32 @@
 	font-style: normal;
 }
 
+@font-face {
+	font-family: 'Proxima Nova';
+	src: url('/fonts/proxima-nova/proximanova-bold-webfont.eot');
+	src: local('☺'), url('/fonts/proxima-nova/proximanova-bold-webfont.woff') format('woff'), url('/fonts/proxima-nova/proximanova-bold-webfont.ttf') format('truetype'), url('/fonts/proxima-nova/proximanova-bold-webfont.svg#webfontnQYSFACF') format('svg');
+	font-weight: bold;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Proxima Nova';
+	src: url('/fonts/proxima-nova/proximanova-regular-webfont.eot');
+	src: local('☺'), url('/fonts/proxima-nova/proximanova-regular-webfont.woff') format('woff'), url('/fonts/proxima-nova/proximanova-regular-webfont.ttf') format('truetype'), url('/fonts/proxima-nova/proximanova-regular-webfont.svg#webfontlz6IUprG') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
 #header .logo,
 h1, h2, h3 {
   font-family: "League Gothic", "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
+
+a {
+  color: #ec008c;
+}
+
+::selection { background: rgba(0, 174, 239, 0.5); color: white; text-shadow: none !important; }
 
 /*}}}*/
 
@@ -25,7 +47,7 @@ body {
 }
 
 body, input, select, textarea, td {
-  font: 14px "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font: 14px "Proxima Nova", "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 
 body:after {
@@ -39,6 +61,7 @@ body:after {
   text-align: center;
   text-transform: uppercase;
   text-shadow: rgba(0, 0, 0, 0.5) 0px -1px 1px;
+  z-index: 1000;
   -webkit-transform: rotate(-45deg);
   -webkit-transform-origin: 40px 0px;
   -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 6px;
@@ -54,6 +77,7 @@ body:after {
 #header {
   height: 64px;
   padding: 16px 64px;
+  border-top: 4px solid rgba(236, 0, 140, 0.5);
 }
 
 #header .logo {
@@ -132,7 +156,10 @@ body:after {
 /* Footer {{{ */
 
 #footer {
-  min-height: 128px;
+  padding: 16px 64px 128px;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 1px;
 }
+
+#footer a { font-weight: bold; }
 
 /* }}} */
