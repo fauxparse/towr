@@ -27,7 +27,8 @@
 #header .logo,
 h1, h2, h3,
 #header .auth a.user,
-#header .auth a.with {
+#header .auth a.with,
+#map_name {
   font-family: "League Gothic", "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 
@@ -200,19 +201,37 @@ body:after {
   border-right: 8px solid transparent;
 }
 
+.map .info #map_name,
 .map .info h2,
 .map .info h3 {
   margin: 0px;
+  padding: 0px;
   float: left;
   font-size: 32px;
   line-height: 32px;
   vertical-align: bottom;
-  text-transform: uppercase;
+  text-transform: uppercase !important;
+  background: none;
+  border: none;
+  outline: none;
+  color: #eee;
   text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 1px;
 }
 
+.map .info #map_name {
+  margin-top: -4px;
+}
+
+.map .info ::-webkit-input-placeholder {
+  color: #666;
+  text-transform: uppercase;
+}
+
 .map .info h3 {
-  float: right;
+  float: none;
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
   font-size: 28px;
   color: #333;
 }

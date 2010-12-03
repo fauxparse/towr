@@ -3,7 +3,9 @@ Towr::Application.routes.draw do
   get "login/:method" => "sessions#new", :as => :login
   get "logout" => "sessions#destroy", :as => :logout
   
-  root :to => "maps#index"
+  resources :maps
+  
   get "new" => "maps#new", :as => :new_map
   get ":id" => "maps#show"
+  root :to => "maps#index"
 end

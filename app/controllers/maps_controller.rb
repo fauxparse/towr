@@ -4,7 +4,7 @@ class MapsController < ApplicationController
   end
 
   def new
-    @map = Map.new
+    @map = Map.new :user => current_user
   end
 
   def show

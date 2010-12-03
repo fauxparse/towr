@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101202213757) do
+ActiveRecord::Schema.define(:version => 20101202235438) do
 
   create_table "maps", :force => true do |t|
     t.string   "name",                       :null => false
@@ -19,7 +19,10 @@ ActiveRecord::Schema.define(:version => 20101202213757) do
     t.text     "routes"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "user_id"
   end
+
+  add_index "maps", ["user_id"], :name => "index_maps_on_user_id"
 
   create_table "twitter_authentications", :force => true do |t|
     t.integer "twitter_id"

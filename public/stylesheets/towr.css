@@ -1,5 +1,5 @@
 .field {
-  background: white;
+  background: #eee;
   position: relative;
   -moz-user-select: none;
   -khtml-user-select: none;
@@ -99,8 +99,7 @@
 /* Editing {{{ */
 
 .editor .cell {
-  -webkit-box-shadow: rgba(0, 0, 0, 0.25) 0px 0px 2px;
-  -moz-box-shadow: rgba(0, 0, 0, 0.25) 0px 0px 1px;
+  -webkit-box-shadow: inset rgba(255, 255, 255, 0.5) 1px 1px 1px, inset rgba(0, 0, 0, 0.15) -1px -1px 1px;
 }
 
 .editor .resize {
