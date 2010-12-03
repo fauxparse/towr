@@ -28,7 +28,8 @@
 h1, h2, h3,
 #header .auth a.user,
 #header .auth a.with,
-#map_name {
+#map_name,
+.map .editor-switch {
   font-family: "League Gothic", "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 
