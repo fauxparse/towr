@@ -218,10 +218,10 @@
 .map .editor-switch {
   position: absolute;
   bottom: -24px;
-  right: 60px;
+  right: 52px;
   z-index: -1;
   background: #eee;
-  width: 48px;
+  width: 64px;
   padding: 0px;
   font-size: 20px;
   text-align: center;
@@ -255,5 +255,8 @@
   opacity: 0.5;
   -webkit-transform: scaleY(1);
 }
+
+.map .editor-switch.on:before { content: '✎ '; }
+.map .editor-switch.off:before { content: '✔ '; }
 
 /*}}}*/

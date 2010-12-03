@@ -298,18 +298,21 @@ Editor.Tools = {
     Name: 'EntryPoint',
     Caption: 'IN',
     mouseUp: function(event, cell) {
-      var isWest = (cell.x == 0),
+      var cp = cell.getPosition(),
+          q = this._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y),
+          isWest = (cell.x == 0),
           isEast = (cell.x == this.editor.columns - 1),
           isNorth = (cell.y == 0),
           isSouth = (cell.y == this.editor.rows - 1);
 
-      if ((isWest || isEast || isNorth || isSouth) && !cell.hasClass('exit')) {
-        cell.addClass('entry');
-        if (isWest) cell.addClass('entry-' + WEST);
-        if (isEast) cell.addClass('entry-' + EAST);
-        if (isNorth) cell.addClass('entry-' + NORTH);
-        if (isSouth) cell.addClass('entry-' + SOUTH);
-        this.stopEditing();
+      if ((q == NORTH) && isNorth) {
+        cell.removeClass('exit-' + NORTH).addClass('entry-' + NORTH);
+      } else if ((q == EAST) && isEast) {
+        cell.removeClass('exit-' + EAST).addClass('entry-' + EAST);
+      } else if ((q == SOUTH) && isSouth) {
+        cell.removeClass('exit-' + SOUTH).addClass('entry-' + SOUTH);
+      } else if ((q == WEST) && isWest) {
+        cell.removeClass('exit-' + WEST).addClass('entry-' + WEST);
       }
     }
   }),
@@ -318,18 +321,21 @@ Editor.Tools = {
     Name: 'ExitPoint',
     Caption: 'OUT',
     mouseUp: function(event, cell) {
-      var isWest = (cell.x == 0),
+      var cp = cell.getPosition(),
+          q = this._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y),
+          isWest = (cell.x == 0),
           isEast = (cell.x == this.editor.columns - 1),
           isNorth = (cell.y == 0),
           isSouth = (cell.y == this.editor.rows - 1);
 
-      if ((isWest || isEast || isNorth || isSouth) && !cell.hasClass('entry')) {
-        cell.addClass('exit');
-        if (isWest) cell.addClass('exit-' + WEST);
-        if (isEast) cell.addClass('exit-' + EAST);
-        if (isNorth) cell.addClass('exit-' + NORTH);
-        if (isSouth) cell.addClass('exit-' + SOUTH);
-        this.stopEditing();
+      if ((q == NORTH) && isNorth) {
+        cell.removeClass('entry-' + NORTH).addClass('exit-' + NORTH);
+      } else if ((q == EAST) && isEast) {
+        cell.removeClass('entry-' + EAST).addClass('exit-' + EAST);
+      } else if ((q == SOUTH) && isSouth) {
+        cell.removeClass('entry-' + SOUTH).addClass('exit-' + SOUTH);
+      } else if ((q == WEST) && isWest) {
+        cell.removeClass('entry-' + WEST).addClass('exit-' + WEST);
       }
     }
   })
