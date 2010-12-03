@@ -132,8 +132,9 @@ var Editor = new Class({
       if (self.selectedTool) self.selectedTool.mouseMove(event, cell);
     }).addEvent('mouseup:relay(.cell)', function(event, cell) {
       if (self.selectedTool) self.selectedTool.mouseUp(event, cell);
-    })
-    .addEvent('mouseLeave', function(event) {
+    }).addEvent('click:relay(.cell)', function(event, cell) {
+      if (self.selectedTool) self.selectedTool.click(event, cell);
+    }).addEvent('mouseLeave', function(event) {
       if (self.selectedTool) self.selectedTool.mouseLeave();
     });
 
@@ -153,15 +154,16 @@ var Editor = new Class({
     for (i in Editor.Tools) {
       new (Editor.Tools[i])(this);
     }
-    this.editorTools.getElements('.tool')[0].fireEvent('click');
   },
   startEditing: function() {
     this.editing = true;
     this.element.addClass('editing');
+    this.editorTools.getElements('.tool')[0].fireEvent('click');
   },
   stopEditing: function() {
     this.editing = false;
     this.element.removeClass('editing');
+    if (this.selectedTool) { this.selectedTool.stopEditing(); }
   }
 });
 
@@ -206,8 +208,19 @@ var Tool = new Class({
     if (this.drawing) { this.stopDrawing(); }
   },
   mouseMove: function(event, cell) {},
+  click: function(event, cell) {},
   mouseLeave: function(event) {
     if (this.drawing) { this.stopDrawing(); }
+  },
+  _cellQuadrant: function(x, y) {
+    var r = this.editor.cellSize / 3;
+    var dx = x - this.editor.cellSize / 2, dl = x, dr = this.editor.cellSize - x;
+    var dy = y - this.editor.cellSize / 2, dt = y, db = this.editor.cellSize - y;
+    if (Math.sqrt(dx * dx + dt * dt) < r) { return NORTH; }
+    if (Math.sqrt(dx * dx + db * db) < r) { return SOUTH; }
+    if (Math.sqrt(dy * dy + dl * dl) < r) { return WEST; }
+    if (Math.sqrt(dy * dy + dr * dr) < r) { return EAST; }
+    return false;
   }
 });
 
@@ -263,16 +276,6 @@ Editor.Tools = {
           }
         }
       }
-    },
-    _cellQuadrant: function(x, y) {
-      var r = this.editor.cellSize / 3;
-      var dx = x - this.editor.cellSize / 2, dl = x, dr = this.editor.cellSize - x;
-      var dy = y - this.editor.cellSize / 2, dt = y, db = this.editor.cellSize - y;
-      if (Math.sqrt(dx * dx + dt * dt) < r) { return NORTH; }
-      if (Math.sqrt(dx * dx + db * db) < r) { return SOUTH; }
-      if (Math.sqrt(dy * dy + dl * dl) < r) { return WEST; }
-      if (Math.sqrt(dy * dy + dr * dr) < r) { return EAST; }
-      return false;
     }
   }),
   Erase: new Class({
@@ -290,4 +293,44 @@ Editor.Tools = {
       this.mouseMove(event, cell);
     }
   }),
+  EntryPoint: new Class({
+    Extends: Tool,
+    Name: 'EntryPoint',
+    Caption: 'IN',
+    mouseUp: function(event, cell) {
+      var isWest = (cell.x == 0),
+          isEast = (cell.x == this.editor.columns - 1),
+          isNorth = (cell.y == 0),
+          isSouth = (cell.y == this.editor.rows - 1);
+
+      if ((isWest || isEast || isNorth || isSouth) && !cell.hasClass('exit')) {
+        cell.addClass('entry');
+        if (isWest) cell.addClass('entry-' + WEST);
+        if (isEast) cell.addClass('entry-' + EAST);
+        if (isNorth) cell.addClass('entry-' + NORTH);
+        if (isSouth) cell.addClass('entry-' + SOUTH);
+        this.stopEditing();
+      }
+    }
+  }),
+  ExitPoint: new Class({
+    Extends: Tool,
+    Name: 'ExitPoint',
+    Caption: 'OUT',
+    mouseUp: function(event, cell) {
+      var isWest = (cell.x == 0),
+          isEast = (cell.x == this.editor.columns - 1),
+          isNorth = (cell.y == 0),
+          isSouth = (cell.y == this.editor.rows - 1);
+
+      if ((isWest || isEast || isNorth || isSouth) && !cell.hasClass('entry')) {
+        cell.addClass('exit');
+        if (isWest) cell.addClass('exit-' + WEST);
+        if (isEast) cell.addClass('exit-' + EAST);
+        if (isNorth) cell.addClass('exit-' + NORTH);
+        if (isSouth) cell.addClass('exit-' + SOUTH);
+        this.stopEditing();
+      }
+    }
+  })
 }

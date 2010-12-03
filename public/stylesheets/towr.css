@@ -31,6 +31,56 @@
   -khtml-user-select: none;
 }
 
+.cell.entry {
+
+}
+
+.cell.entry-1:before,
+.cell.entry-4:before,
+.cell.entry-2:after,
+.cell.entry-8:after,
+.cell.exit-1:before,
+.cell.exit-4:before,
+.cell.exit-2:after,
+.cell.exit-8:after {
+  content: 'IN';
+  position: absolute;
+  left: 0px;
+  top: -12px;
+  right: 0px;
+  background: #8dc63f;
+  color: white;
+  font-size: 12px;
+  line-height: 12px;
+  vertical-align: middle;
+  text-align: center;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px -1px 1px;
+  -webkit-border-top-left-radius: 4px;
+  -webkit-border-top-right-radius: 4px;
+  -moz-border-radius-topleft: 4px;
+  -moz-border-radius-topright: 4px;
+  -webkit-transform-origin: 16px 28px;
+  -moz-transform-origin: 16px 28px;
+}
+
+.cell.entry-2:after, .cell.exit-2:after   {
+  -webkit-transform: rotate(90deg);  -moz-transform: rotate(90deg);  text-shadow: rgba(0, 0, 0, 0.5) -1px 0px 1px;
+}
+.cell.entry-4:before, .cell.exit-4:before {
+  -webkit-transform: rotate(180deg); -moz-transform: rotate(180deg); text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 1px;
+}
+.cell.entry-8:after, .cell.exit-8:after   {
+  -webkit-transform: rotate(-90deg); -moz-transform: rotate(-90deg); text-shadow: rgba(0, 0, 0, 0.5) 1px 0px 1px;
+}
+
+.cell.exit-1:before,
+.cell.exit-4:before,
+.cell.exit-2:after,
+.cell.exit-8:after {
+  content: 'OUT';
+  background: #ed1c24;
+}
+
 /* Map {{{ */
 
 .map {
@@ -74,17 +124,17 @@
 
 .map .toolbar {
   position: absolute;
-  left: 8px;
-  top: 8px;
-  right: 8px;
-  bottom: 8px;
-  z-index: 10;
+  left: 6px;
+  top: 6px;
+  right: 6px;
+  bottom: 6px;
   opacity: 0;
-  -webkit-transition: opacity 0.5s ease-in;
+  -webkit-transition: opacity 0.5s ease-out;
 }
 
 .map.editing .toolbar-container.toolbar {
   opacity: 0;
+  -webkit-transform: translateZ(5px);
 }
 
 .map.editing .toolbar-container {
@@ -93,11 +143,12 @@
 
 .map .toolbar-container .editor-tools {
   opacity: 0;
-  -webkit-transform: rotateY(-180deg);
+  -webkit-transform: translateZ(-5px) rotateY(-180deg);
 }
 
 .map.editing .toolbar-container .editor-tools {
   opacity: 1;
+  z-index: 10;
 }
 
 .map .toolbar .tool {
@@ -106,7 +157,7 @@
   height: 32px;
   background: #444;
   color: #999;
-  margin: 0px 4px 4px 0px;
+  margin: 2px;
   font-size: 24px;
   line-height: 32px;
   vertical-align: middle;
@@ -128,6 +179,11 @@
   -moz-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 4px;
 }
 
+.map .toolbar .tool.EntryPoint,
+.map .toolbar .tool.ExitPoint {
+  font-size: 12px;
+}
+
 /* }}} */
 
 /* Editing {{{ */
@@ -137,6 +193,7 @@
 
 .map.editing .cell {
   -webkit-box-shadow: inset rgba(255, 255, 255, 0.5) 1px 1px 1px, inset rgba(0, 0, 0, 0.15) -1px -1px 1px;
+  -moz-box-shadow: inset rgba(255, 255, 255, 0.5) 1px 1px 1px, inset rgba(0, 0, 0, 0.15) -1px -1px 1px;
 }
 
 .map .resize {
@@ -179,8 +236,8 @@
   -webkit-transform-origin: center top;
   -webkit-border-bottom-left-radius: 4px;
   -webkit-border-bottom-right-radius: 4px;
-  -webkit-border-radius-bottomleft: 4px;
-  -webkit-border-radius-bottomright: 4px;
+  -moz-border-radius-bottomleft: 4px;
+  -moz-border-radius-bottomright: 4px;
   -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 2px 4px;
   -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 2px 4px;
   -webkit-transition: -webkit-transform 0.25s ease-in-out, opacity 0.25s ease-in;
