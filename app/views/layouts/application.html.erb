@@ -16,7 +16,9 @@
       <% else %>
         <p>Log in with</p>
         <p>
-          <%= link_to "Twitter", login_path(:twitter), :class => "with twitter" %>
+          <% Auth.methods.each do |method| %>
+            <%= link_to method.to_s.humanize, login_path(method), :class => "with #{method}" %>
+          <% end %>
         </p>
       <% end %>
     </div>

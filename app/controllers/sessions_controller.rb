@@ -2,7 +2,6 @@ require "auth"
 
 class SessionsController < ApplicationController
   def new
-    Rails.logger.info session.inspect.green
     if api
       session[:return_to] ||= request.referrer
       redirect_to api.authentication_url
@@ -12,9 +11,13 @@ class SessionsController < ApplicationController
   end
   
   def create
-    @user = api.login
-    session[:user_id] = @user.id if @user
-    redirect_to session[:return_to] || root_url
+    if @user = api.login
+      session[:user_id] = @user.id
+      redirect_to session[:return_to] || root_url
+    else
+      flash[:message] = "There was a problem logging you in."
+      redirect_to login_prompt_path
+    end
   end
   
   def destroy

@@ -15,16 +15,17 @@ module Auth
     def authentication_url
       client.web_server.authorize_url(  
         :redirect_uri => login_callback_url(:facebook),
-        :scope => 'email,offline_access,user_photos'  
+        :scope => 'email,offline_access,user_photos,publish_stream'  
       )
     end
     
     def login
-      access_token = client.web_server.get_access_token(params[:code], :redirect_uri => login_callback_url(:facebook))
-      if user_info = JSON.parse(access_token.get('/me'))
+      begin
+        access_token = client.web_server.get_access_token(params[:code], :redirect_uri => login_callback_url(:facebook))
+        user_info = JSON.parse(access_token.get('/me'))
         User::Facebook[user_info].user
-      else
-        false
+      rescue OAuth2::HTTPError => e
+        return false
       end
     end
     

@@ -1,5 +1,5 @@
 Towr::Application.routes.draw do
-  get "login/please" => "sessions#prompt", :as => :login_prompt
+  get "login" => "sessions#prompt", :as => :login_prompt
   get "login/from/:method" => "sessions#create", :as => :login_callback
   get "login/:method" => "sessions#new", :as => :login
   get "logout" => "sessions#destroy", :as => :logout

@@ -17,6 +17,7 @@ module Auth
     end
     
     def authentication_url
+      controller.session.delete :twitter
       request_token = consumer.get_request_token(:oauth_callback => login_callback_url(:twitter))
       session.update :request_token => request_token.token, :request_secret => request_token.secret
       request_token.authorize_url
