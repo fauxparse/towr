@@ -36,7 +36,14 @@
         ENTRY = <%= Map::ENTRY %>,
         EXIT  = <%= Map::EXIT %>
   </script>
-  <%= javascript_include_tag "mootools", "mootools-more", "plugins", "rails", "towr" %>
+  <%= javascript_include_tag "mootools", "mootools-more", "plugins", "rails", "towr", "application" %>
+  <% if flash.any? %>
+    <script type="text/javascript" charset="utf-8">
+      <% flash.each_pair do |kind, message| %>
+        Flash.alert('<%= escape_javascript message %>', { className: '<%= kind %>' });
+      <% end %>
+    </script>
+  <% end %>
   <%= yield :scripts %>
 </body>
 </html>

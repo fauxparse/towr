@@ -251,3 +251,25 @@ body:after {
 #footer a { font-weight: bold; }
 
 /* }}} */
+
+/* Notifications {{{ */
+
+.purr-wrapper{
+	margin:10px;
+}
+
+.purr-alert{
+	width:320px;
+	margin-bottom: 8px;
+	padding: 8px;
+	background: rgba(255, 255, 191, 0.75);
+	font-size: 14px;
+	text-shadow: rgba(255, 255, 191, 0.75) 0px 1px 1px;
+	color: #333;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 4px inset #ffc 0px 1px 1px;
+	-moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 4px;
+}
+
+/* }}} */

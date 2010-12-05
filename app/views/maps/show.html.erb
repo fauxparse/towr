@@ -1,0 +1,14 @@
+<div class="map">
+  <div class="info">
+    <h2><%= @map.name %></h2>
+    <h3>by <strong><%= @map.user || "Anonymous" %></strong></h3>
+  </div>
+  <%= field @map %>
+  <% content_for :scripts do %>
+    <script type="text/javascript" charset="utf-8">
+      window.addEvent('domready', function() {
+        new Map($$('.map')[0]);
+      });
+    </script>
+  <% end %>
+</div>

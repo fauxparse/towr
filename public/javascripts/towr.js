@@ -12,6 +12,8 @@ var Map = new Class({
     this.cellSize = this.field.getElements('.cell')[0].getSize().x;
     this.resizeTo(this.field.getChildren('.row').length, this.field.getChildren('.row')[0].getChildren('.cell').length);
     this.element.setStyles({ width: (this.columns * this.cellSize) + 'px' });
+    
+    this.createToolbar();
   },
   resizeTo: function(rows, columns) {
     var self = this;
@@ -147,8 +149,6 @@ var Editor = new Class({
       }
     });
     
-    this.createToolbar();
-    
     this.drawing = false;
     this.field.addEvent('mousedown:relay(.cell)', function(event, cell) {
       event.preventDefault();
@@ -169,7 +169,6 @@ var Editor = new Class({
     .addEvent('click', function() { self.stopEditing(); return false; });
 
     self.editing = false;
-    self.startEditing();
   },
   resizeTo: function(rows, columns) {
     this.parent(rows, columns);

@@ -3,6 +3,7 @@ require "auth/twitter"
 class SessionsController < ApplicationController
   def new
     if api
+      session[:return_to] = request.referrer
       redirect_to api.authentication_url
     else
       redirect_to "/"
