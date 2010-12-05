@@ -1,5 +1,3 @@
-var NORTH = 1, EAST = 2, SOUTH = 4, WEST = 8;
-
 var Map = new Class({
   initialize: function(element) {
     var self = this;
@@ -46,10 +44,16 @@ var Map = new Class({
     var w = this.columns * this.cellSize, h = this.rows * this.cellSize;
     this.canvas.set('width', w).set('height', h);
     var context = this.canvas.getContext('2d');
-    var re = this.field.getChildren('.row');
     context.lineWidth = 16;
+    context.strokeStyle = "#999";
+    this.traceRoute(context);
+    context.lineWidth = 14;
     context.strokeStyle = "#ccc";
-    
+    this.traceRoute(context);
+  },
+  traceRoute: function(context) {
+    var self = this;
+    var re = this.field.getChildren('.row');
     for (j = 0; j < self.rows; j++) {
       var ce = re[j].getChildren('.cell');
       for (i = 0; i < self.columns; i++) {
@@ -101,6 +105,26 @@ var Map = new Class({
     this.toolbar = new Element('div', {
       'class': 'toolbar'
     }).inject(this.toolbarContainer);
+  },
+  serialize: function() {
+    var self = this;
+    var codes = { route:0, entry:ENTRY, exit:EXIT };
+    return self.field.getElements('.row').slice(0, self.rows).map(function(row, j) {
+      var cells = [];
+      row.getElements('.cell').slice(0, self.columns).each(function(cell, i) {
+        var values = [];
+        $A(cell.classList).each(function(c) {
+          if (m = /(route|entry|exit)-([0-9]+)/.exec(c)) {
+            values.push((codes[m[1]] + parseInt(m[2])).toString(16));
+          }
+        });
+        if (values.length > 0) {
+          cells.push(i + ':' + values.join('+'));
+        }
+      });
+      return cells.join(',');
+    }).join('|');
+    return result;
   }
 });
 
@@ -108,6 +132,7 @@ var Editor = new Class({
   Extends: Map,
   initialize: function(element) {
     var self = this;
+    self.form = element.getParent('form');
     this.parent(element);
     
     this.resizeHandle = new Element('div', { 'class':'resize' })
@@ -143,8 +168,13 @@ var Editor = new Class({
     new Element('a', { href:'#', 'class':'editor-switch off', html:'Done' }).inject(this.element)
     .addEvent('click', function() { self.stopEditing(); return false; });
 
-    this.editing = false;
-    this.startEditing();
+    self.editing = false;
+    self.startEditing();
+  },
+  resizeTo: function(rows, columns) {
+    this.parent(rows, columns);
+    this.form.getElement('#map_rows').set('value', this.rows);
+    this.form.getElement('#map_columns').set('value', this.columns);
   },
   createToolbar: function() {
     this.parent();
@@ -164,6 +194,12 @@ var Editor = new Class({
     this.editing = false;
     this.element.removeClass('editing');
     if (this.selectedTool) { this.selectedTool.stopEditing(); }
+    this.form.getElement('#map_contents').set('value', this.serialize());
+    if (this.form.get('data-remote') == 'true') {
+      this.form.fireEvent('submit');
+    } else {
+      this.form.submit()
+    }
   }
 });
 

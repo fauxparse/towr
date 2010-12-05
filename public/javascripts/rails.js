@@ -103,7 +103,7 @@ window.addEvent('domready', function() {
     },
 
     handleRemote: function(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
 
       if(rails.confirmed(this)) {
         this.request = new Request.Rails(this);

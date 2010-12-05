@@ -1,0 +1,4 @@
+<%= form_for @map, :as => :map, :url => map_path(@map, :js), :remote => true do |form| %>
+  <%= render "form", :form => form %>
+<% end %>
+

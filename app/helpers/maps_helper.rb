@@ -4,7 +4,7 @@ module MapsHelper
       (0...map.rows).map do |j|
         content_tag :div, :class => :row do
           (0...map.columns).map do |i|
-            content_tag :div, :class => :cell do
+            content_tag :div, :class => "cell #{map.at(i, j).join(" ")}" do
               ""
             end
           end.join.html_safe

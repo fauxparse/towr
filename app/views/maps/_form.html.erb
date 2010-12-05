@@ -1,0 +1,18 @@
+  <div class="map editor">
+    <div class="info">
+      <%= form.text_field :name, :placeholder => "UNTITLED MAP" %>
+      <h3>by <strong><%= @map.user || "Anonymous" %></strong></h3>
+    </div>
+    <%= field @map %>
+    <%= form.hidden_field :rows %>
+    <%= form.hidden_field :columns %>
+    <%= form.hidden_field :contents %>
+    <% content_for :scripts do %>
+      <script type="text/javascript" charset="utf-8">
+        window.addEvent('domready', function() {
+          new Form.Placeholder('map_name');
+          new Editor($$('.map')[0]);
+        });
+      </script>
+    <% end %>
+  </div>

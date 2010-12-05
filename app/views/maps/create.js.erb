@@ -1,0 +1,6 @@
+$('map_new')
+  .set('action', '<%= map_path(@map, :js) %>')
+  .set('data-method', 'put')
+  .removeClass('map_new')
+  .addClass('map_edit')
+  .set('id', 'map_edit');

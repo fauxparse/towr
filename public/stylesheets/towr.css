@@ -134,7 +134,7 @@
 
 .map.editing .toolbar-container.toolbar {
   opacity: 0;
-  -webkit-transform: translateZ(5px);
+  -webkit-transform: translateZ(1px);
 }
 
 .map.editing .toolbar-container {
@@ -143,7 +143,7 @@
 
 .map .toolbar-container .editor-tools {
   opacity: 0;
-  -webkit-transform: translateZ(-5px) rotateY(-180deg);
+  -webkit-transform: translateZ(-1px) rotateY(-180deg);
 }
 
 .map.editing .toolbar-container .editor-tools {
