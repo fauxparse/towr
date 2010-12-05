@@ -5,6 +5,7 @@ gem 'pg'
 gem 'unicorn'
 gem 'heroku'
 gem 'oauth'
+gem 'oauth2'
 gem 'colored'
 
 # Get around annoying warnings

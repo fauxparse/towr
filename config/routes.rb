@@ -1,4 +1,5 @@
 Towr::Application.routes.draw do
+  get "login/please" => "sessions#prompt", :as => :login_prompt
   get "login/from/:method" => "sessions#create", :as => :login_callback
   get "login/:method" => "sessions#new", :as => :login
   get "logout" => "sessions#destroy", :as => :logout
@@ -6,6 +7,6 @@ Towr::Application.routes.draw do
   resources :maps
   
   get "new" => "maps#new", :as => :new_map
-  get ":id" => "maps#show"
+  get ":id" => "maps#show", :as => :show_or_edit_map
   root :to => "maps#index"
 end

@@ -12,4 +12,15 @@ protected
   end
   helper_method :logged_in?
   
+  def self.require_login(*args)
+    before_filter :confirm_login, *args
+  end
+    
+  def confirm_login
+    unless logged_in?
+      session[:return_to] = request.params
+      redirect_to login_prompt_path
+    end
+  end
+  
 end

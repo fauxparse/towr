@@ -1,9 +1,10 @@
-require "auth/twitter"
+require "auth"
 
 class SessionsController < ApplicationController
   def new
+    Rails.logger.info session.inspect.green
     if api
-      session[:return_to] = request.referrer
+      session[:return_to] ||= request.referrer
       redirect_to api.authentication_url
     else
       redirect_to "/"
@@ -22,8 +23,12 @@ class SessionsController < ApplicationController
     redirect_to root_url
   end
   
+  def prompt
+    
+  end
+  
 protected
   def api
-    @api ||= Auth.const_get(params[:method].to_s.camelize).try(:new, self)
+    @api ||= Auth[params[:method]].try(:new, self)
   end
 end

@@ -1,4 +1,6 @@
 class MapsController < ApplicationController
+  require_login :except => [ :index, :show ]
+  
   def index
     
   end
@@ -11,7 +13,7 @@ class MapsController < ApplicationController
     @map = Map.new((params[:map]).merge(:user => current_user))
     @map.save
     flash[:message] = "Thanks! We've saved that map for you."
-    redirect_to edit_map_path(@map) unless request.xhr?
+    redirect_to show_or_edit_map_path(@map) unless request.xhr?
   end
 
   def show
@@ -26,7 +28,7 @@ class MapsController < ApplicationController
   def update
     @map = Map.find params[:id].to_map_code
     @map.update_attributes params[:map]
-    redirect_to edit_map_path(@map) unless request.xhr?
+    redirect_to show_or_edit_map_path(@map) unless request.xhr?
   end
 
 end

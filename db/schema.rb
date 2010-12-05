@@ -10,12 +10,20 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101204034008) do
+ActiveRecord::Schema.define(:version => 20101205220220) do
+
+  create_table "facebook_authentications", :force => true do |t|
+    t.integer "facebook_id"
+    t.integer "user_id",     :null => false
+  end
+
+  add_index "facebook_authentications", ["facebook_id"], :name => "index_facebook_authentications_on_facebook_id"
+  add_index "facebook_authentications", ["user_id"], :name => "index_facebook_authentications_on_user_id"
 
   create_table "maps", :force => true do |t|
     t.string   "name",                       :null => false
-    t.integer  "rows",       :default => 12, :null => false
-    t.integer  "columns",    :default => 12, :null => false
+    t.integer  "rows",       :default => 16, :null => false
+    t.integer  "columns",    :default => 16, :null => false
     t.text     "contents"
     t.datetime "created_at"
     t.datetime "updated_at"
