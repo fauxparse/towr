@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101205220220) do
+ActiveRecord::Schema.define(:version => 20101205230553) do
 
   create_table "facebook_authentications", :force => true do |t|
     t.integer "facebook_id"
@@ -31,6 +31,15 @@ ActiveRecord::Schema.define(:version => 20101205220220) do
   end
 
   add_index "maps", ["user_id"], :name => "index_maps_on_user_id"
+
+  create_table "remember_tokens", :force => true do |t|
+    t.integer  "user_id",    :null => false
+    t.string   "token",      :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "remember_tokens", ["user_id", "token"], :name => "index_remember_tokens_on_user_id_and_token"
 
   create_table "twitter_authentications", :force => true do |t|
     t.integer "twitter_id"

@@ -3,7 +3,11 @@ class ApplicationController < ActionController::Base
   
 protected
   def current_user
-    @current_user ||= User.find_by_id(session[:user_id]) if session[:user_id].present?
+    @current_user ||= if session[:user_id].present?
+      User.find_by_id(session[:user_id])
+    elsif cookies[:remember_me].present?
+      RememberToken.find_by_user_id_and_token(*cookies[:remember_me].split("&"), :include => :user).try(:user)
+    end
   end
   helper_method :current_user
   
