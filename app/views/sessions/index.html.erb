@@ -1,0 +1,10 @@
+<div class="prompt">
+  <h1>Mind logging in first?</h1>
+  <p><strong>Terribly sorry about this:</strong> it's just that if you log in, we can keep track of maps you’ve created and stuff like that. It’s pretty easy though: you don’t need to think of a password, or even enter your email address.</p>
+
+  <ul class="login-methods">
+    <% Auth.methods.each do |method| %>
+      <li><%= link_to "Log in with <strong>#{method.to_s.humanize}</strong>".html_safe, login_path(method) %></li>
+    <% end %>
+  </ul>
+</div>

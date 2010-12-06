@@ -1,6 +1,10 @@
 require "auth"
 
 class SessionsController < ApplicationController
+  def index
+    
+  end
+  
   def new
     if api
       session[:return_to] ||= request.referrer
@@ -30,10 +34,6 @@ class SessionsController < ApplicationController
       cookies.delete :remember_me
     end
     redirect_to root_url
-  end
-  
-  def prompt
-    
   end
   
 protected
