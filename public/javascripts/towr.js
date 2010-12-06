@@ -138,6 +138,7 @@ var Map = new Class({
           if (cell) {
             cell.removeClass('good').removeClass('bad');
             if (self.canPlace(tower, cell)) {
+              
           //     klass = $A(tower.classList).filter(function(c) { return Towers[c]; })[0];
           //     newTower = new Element('div', {
           //       'class': 'tower',
