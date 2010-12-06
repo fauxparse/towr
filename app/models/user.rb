@@ -7,9 +7,4 @@ class User < ActiveRecord::Base
   accepts_nested_attributes_for :facebook, :twitter
 
   alias_attribute :to_s, :name
-  
-  def merge!(another)
-    # TODO: make everything that pointed to the old user point at this one instead
-    another.destroy
-  end
 end

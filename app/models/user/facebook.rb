@@ -7,7 +7,8 @@ class User::Facebook < ActiveRecord::Base
     find_by_facebook_id(info["id"]) ||
     create({
       :facebook_id => info["id"],
-      :user => User.create(:name => info["name"], :email => info["email"], :link => info["link"])
+      :link => info["link"],
+      :user => User.create(:name => info["name"], :email => info["email"])
     })
   end
 end

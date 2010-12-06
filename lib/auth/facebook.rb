@@ -19,11 +19,10 @@ module Auth
       )
     end
     
-    def login
+    def login(callback_url = nil)
       begin
-        access_token = client.web_server.get_access_token(params[:code], :redirect_uri => login_callback_url(:facebook))
+        access_token = client.web_server.get_access_token(params[:code], :redirect_uri => callback_url || login_callback_url(:facebook))
         user_info = JSON.parse(access_token.get('/me'))
-        Rails.logger.info user_info.inspect.red
         User::Facebook[user_info].user
       rescue OAuth2::HTTPError => e
         return false

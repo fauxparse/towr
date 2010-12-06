@@ -24,8 +24,8 @@ ActiveRecord::Schema.define(:version => 20101206022012) do
 
   create_table "maps", :force => true do |t|
     t.string   "name",                       :null => false
-    t.integer  "rows",       :default => 16, :null => false
-    t.integer  "columns",    :default => 16, :null => false
+    t.integer  "rows",       :default => 12, :null => false
+    t.integer  "columns",    :default => 12, :null => false
     t.text     "contents"
     t.datetime "created_at"
     t.datetime "updated_at"

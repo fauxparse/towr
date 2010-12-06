@@ -36,7 +36,7 @@ module Auth
       access_token
     end
     
-    def login
+    def login(callback_url = nil)
       response = consumer.request(:get, '/account/verify_credentials.json', access_token, { :scheme => :query_string, :oauth_verifier => session[:oauth_verifier] })
       if response.code == "200"
         user_info = JSON.parse(response.body)

@@ -91,8 +91,31 @@ form.formtastic fieldset.connect {
   min-height: 64px;
   background: url(/images/twitter.png) no-repeat 8px 8px;
   padding-left: 80px;
-  padding-bottom: 0px;
+  padding-bottom: 8px;
   width: 552px;
+  overflow: hidden;
+  position: relative;
+}
+
+form.formtastic fieldset.connected:after {
+  content: 'Connected';
+  background: #8dc63f;
+  font: 18px "League Gothic", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  position: absolute;
+  left: -65px;
+  top: 60px;
+  width: 200px;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px -1px 1px;
+  z-index: 1000;
+  opacity: 0.85;
+  -webkit-transform: rotate(-45deg);
+  -webkit-transform-origin: 40px 0px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 6px;
+  -moz-transform: rotate(-45deg);
+  -moz-transform-origin: 40px 0px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 6px;
 }
 
 form.formtastic fieldset.facebook {
@@ -108,9 +131,16 @@ form.formtastic fieldset.connect li.boolean label {
   padding-left: 0px;
 }
 
+form.formtastic fieldset.connect .button {
+  display: block;
+  margin-top: 8px;
+}
+
 /* Buttons {{{ */
   
 .button {
+  font-weight: bold;
+  text-transform: uppercase;
   display: block;
   position: relative;
   background: #ec008c;
@@ -120,7 +150,7 @@ form.formtastic fieldset.connect li.boolean label {
   font-size: 20px;
   letter-spacing: 1px;
   line-height: 1;
-  padding: 2px 0px 1px;
+  padding: 4px 0px;
   text-decoration: none;
   text-align: center;
   text-shadow: rgba(0, 0, 0, 0.5) 0px -1px 1px;
@@ -171,7 +201,7 @@ form.formtastic h1 {
 form.formtastic h1 .button {
   float: right;
   margin-top: 12px;
-  font-size: 24px !important;
+  font-size: 20px;
 }
 
 /*}}}*/

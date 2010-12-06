@@ -21,11 +21,10 @@ class UsersController < ApplicationController
   end
   
   def connect_callback
-    if @user = api.login
-      if @user != current_user
-        @user.send(params[:method]).update_attribute :user_id, current_user.id
-        @user.reload
-        current_user.merge! @user
+    if @user = api.login(connect_callback_url(params[:method]))
+      if @user.id != current_user.id
+        @user.send(params[:method]).update_attributes :user => current_user
+        User.delete @user.id
       end
     else
       flash[:message] = "There was a problem logging you in."

@@ -67,7 +67,6 @@ body:after {
   -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 6px;
 }
 
-.button,
 #header .logo,
 h1, h2, h3,
 #header .auth a.user,
@@ -79,6 +78,7 @@ h1, h2, h3,
   text-transform: uppercase;
 }
 
+.button,
 form.formtastic fieldset.connect h3 {
   font-family: "Proxima Nova", "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
@@ -293,7 +293,7 @@ p {
 	width:320px;
 	margin-bottom: 8px;
 	padding: 8px;
-	background: rgba(255, 255, 191, 0.75);
+	background: rgba(255, 255, 191, 0.97);
 	font-size: 14px;
 	text-shadow: rgba(255, 255, 191, 0.75) 0px 1px 1px;
 	color: #333;

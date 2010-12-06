@@ -1,5 +1,5 @@
 Flash = new Purr({
   mode: 'top',
-  position: 'right',
+  position: 'left',
   highlight: false
 });
