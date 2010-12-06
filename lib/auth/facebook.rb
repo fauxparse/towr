@@ -12,9 +12,9 @@ module Auth
       @client ||= OAuth2::Client.new(ENV['FACEBOOK_KEY'], ENV['FACEBOOK_SECRET'], { :site => "https://graph.facebook.com" })
     end
     
-    def authentication_url
+    def authentication_url(callback_url = nil)
       client.web_server.authorize_url(  
-        :redirect_uri => login_callback_url(:facebook),
+        :redirect_uri => callback_url || login_callback_url(:facebook),
         :scope => 'email,offline_access,user_photos,publish_stream'  
       )
     end
@@ -23,6 +23,7 @@ module Auth
       begin
         access_token = client.web_server.get_access_token(params[:code], :redirect_uri => login_callback_url(:facebook))
         user_info = JSON.parse(access_token.get('/me'))
+        Rails.logger.info user_info.inspect.red
         User::Facebook[user_info].user
       rescue OAuth2::HTTPError => e
         return false

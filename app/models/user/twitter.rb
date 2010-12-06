@@ -11,4 +11,8 @@ class User::Twitter < ActiveRecord::Base
       :user => User.create(:name => info["name"])
     })
   end
+  
+  def link
+    "http://twitter.com/#{screen_name}"
+  end
 end

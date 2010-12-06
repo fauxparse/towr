@@ -1,3 +1,4 @@
+# encoding: UTF-8
 class MapsController < ApplicationController
   require_login :except => [ :index, :show ]
   
@@ -12,7 +13,7 @@ class MapsController < ApplicationController
   def create
     @map = Map.new((params[:map]).merge(:user => current_user))
     @map.save
-    flash[:message] = "Thanks! We've saved that map for you."
+    flash[:message] = "Thanks! We’ve saved that map for you."
     redirect_to show_or_edit_map_path(@map) unless request.xhr?
   end
 

@@ -10,11 +10,13 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101205230553) do
+ActiveRecord::Schema.define(:version => 20101206022012) do
 
   create_table "facebook_authentications", :force => true do |t|
     t.integer "facebook_id"
-    t.integer "user_id",     :null => false
+    t.integer "user_id",                       :null => false
+    t.boolean "visible",     :default => true, :null => false
+    t.string  "link"
   end
 
   add_index "facebook_authentications", ["facebook_id"], :name => "index_facebook_authentications_on_facebook_id"
@@ -44,7 +46,8 @@ ActiveRecord::Schema.define(:version => 20101205230553) do
   create_table "twitter_authentications", :force => true do |t|
     t.integer "twitter_id"
     t.string  "screen_name"
-    t.integer "user_id",     :null => false
+    t.integer "user_id",                       :null => false
+    t.boolean "visible",     :default => true, :null => false
   end
 
   add_index "twitter_authentications", ["twitter_id"], :name => "index_twitter_authentications_on_twitter_id"
@@ -54,6 +57,7 @@ ActiveRecord::Schema.define(:version => 20101205230553) do
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "email"
   end
 
 end

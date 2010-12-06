@@ -256,7 +256,8 @@
   -webkit-transform: scaleY(1);
 }
 
-.map .editor-switch.on:before { content: '✎ '; }
-.map .editor-switch.off:before { content: '✔ '; }
+.map .editor-switch:before { font-family: "Iconic"; text-transform: none; }
+.map .editor-switch.on:before { content: 'p '; }
+.map .editor-switch.off:before { content: 'y '; }
 
 /*}}}*/

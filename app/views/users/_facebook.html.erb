@@ -1,0 +1,13 @@
+<%= form.inputs :class => "connect facebook" do %>
+  <% if @user.facebook.present? %>
+    <h3>Connected to Facebook</h3>
+    <p>You can log in to Towr.org by logging in to Facebook first.</p>
+    <%= form.fields_for :facebook do |facebook| %>
+      <%= facebook.input :visible, :label => "Display links to #{link_to "my Facebook profile", facebook.object.link}".html_safe %>
+    <% end %>
+  <% else %>
+    <h3>Connect your Facebook account to Towr</h3>
+    <p>Log in via Facebook to share your creations with your Facebook friends and family.</p>
+    <%= link_to "Log in to my Facebook account", connect_path(:facebook), :class => :button %>
+  <% end %>
+<% end %>

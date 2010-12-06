@@ -1,0 +1,13 @@
+<%= form.inputs :class => "connect twitter" do %>
+  <% if @user.twitter.present? %>
+    <h3>Connected to Twitter</h3>
+    <p>You can log in to Towr.org by logging in to Twitter first.</p>
+    <%= form.fields_for :twitter do |twitter| %>
+      <%= twitter.input :visible, :label => "Display links to #{link_to "my Twitter profile", twitter.object.link}".html_safe %>
+    <% end %>
+  <% else %>
+    <h3>Connect your Twitter account to Towr</h3>
+    <p>Log in via Twitter, share your creations with your Twitter friends, and expose your tweets to a wider audience.</p>
+    <%= link_to "Log in to my Twitter account", connect_path(:twitter), :class => :button %>
+  <% end %>
+<% end %>

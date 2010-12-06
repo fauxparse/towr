@@ -24,6 +24,14 @@
 	font-style: normal;
 }
 
+@font-face {
+  font-family: 'Iconic';
+    src: url("/fonts/iconic/iconic_stroke.eot");
+    src: local('☺'),
+       url("/fonts/iconic/iconic_stroke.svg#iconic") format('svg'),
+       url("/fonts/iconic/iconic_stroke.otf") format('opentype');
+}
+
 /*}}}*/
 
 /* Body styles {{{ */
@@ -59,6 +67,7 @@ body:after {
   -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 6px;
 }
 
+.button,
 #header .logo,
 h1, h2, h3,
 #header .auth a.user,
@@ -70,8 +79,17 @@ h1, h2, h3,
   text-transform: uppercase;
 }
 
+form.formtastic fieldset.connect h3 {
+  font-family: "Proxima Nova", "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
 h1, h2, h3 {
   line-height: 1.2;
+}
+
+h1 {
+  font-size: 300%;
+  margin: 0px 0px 16px;
 }
 
 a {
