@@ -9,7 +9,10 @@ module Auth
     end
     
     def consumer
-      @consumer ||= OAuth::Consumer.new(ENV['TWITTER_KEY'], ENV['TWITTER_SECRET'], { :site => "http://twitter.com" })
+      @consumer ||= OAuth::Consumer.new(ENV['TWITTER_KEY'], ENV['TWITTER_SECRET'], {
+        :site => "http://twitter.com",
+        :authorize_path => "/oauth/authenticate"        
+      })
     end
     
     def session
