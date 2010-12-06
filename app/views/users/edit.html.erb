@@ -1,7 +1,7 @@
 <% content_for :title, "My details" %>
 
-<%= semantic_form_for @user, :as => :user, :url => my_account_path do |form| %>
-  <h1>My details <%= link_to_function "Save", "$('user_edit').submit()", :class => "save button" %></h1>
+<%= semantic_form_for @user, :as => :user, :url => account_path do |form| %>
+  <h1>Your details <%= link_to_function "Save", "$('user_edit').submit()", :class => "save button" %></h1>
 
   <%= form.inputs :class => "name-and-email" do %>
     <%= form.input :name, :input_html => { :placeholder => "My name" } %>

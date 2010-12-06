@@ -10,7 +10,7 @@ class UsersController < ApplicationController
     @user = current_user
     if @user.update_attributes params[:user]
       flash[:message] = "Great! We’ve saved those details."
-      redirect_to my_account_path
+      redirect_to account_path
     else
       render :action => :edit
     end
@@ -29,7 +29,7 @@ class UsersController < ApplicationController
     else
       flash[:message] = "There was a problem logging you in."
     end
-    redirect_to my_account_path
+    redirect_to account_path
   end
 
 protected

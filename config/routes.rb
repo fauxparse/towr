@@ -6,10 +6,10 @@ Towr::Application.routes.draw do
   
   resources :maps
 
-  get "my/details" => "users#edit", :as => :my_account
-  put "my/details" => "users#update"
-  get "my/:method" => "users#connect", :as => :connect
-  get "my/:method/callback" => "users#connect_callback", :as => :connect_callback
+  get "your/details" => "users#edit", :as => :account
+  put "your/details" => "users#update"
+  get "your/:method" => "users#connect", :as => :connect
+  get "your/:method/callback" => "users#connect_callback", :as => :connect_callback
   
   get "new" => "maps#new", :as => :new_map
   get ":id" => "maps#show", :as => :show_or_edit_map

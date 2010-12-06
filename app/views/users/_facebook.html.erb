@@ -3,11 +3,11 @@
     <h3>Connected to Facebook</h3>
     <p>You can log in to Towr.org by logging in to Facebook first.</p>
     <%= form.fields_for :facebook do |facebook| %>
-      <%= facebook.input :visible, :label => "Display links to #{link_to "my Facebook profile", facebook.object.link}".html_safe %>
+      <%= facebook.input :visible, :label => "Display links to #{link_to "your Facebook profile", facebook.object.link}".html_safe %>
     <% end %>
   <% else %>
     <h3>Connect your Facebook account to Towr</h3>
-    <p>Log in via Facebook to share your creations with your Facebook friends and family.</p>
+    <p>Log in via Facebook to share your creations with your friends and family.</p>
     <p><%= link_to "Connect", connect_path(:facebook), :class => :button %></p>
   <% end %>
 <% end %>
