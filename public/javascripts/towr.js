@@ -101,12 +101,55 @@ var Map = new Class({
     }
   },
   createToolbar: function() {
+    var self = this;
+    
     this.toolbarContainer = new Element('div', {
       'class': 'toolbar-container'
     }).inject(this.element);
     this.toolbar = new Element('div', {
       'class': 'toolbar'
     }).inject(this.toolbarContainer);
+    this.towerPalette = new Element('div', {
+      'class': 'towers'
+    }).inject(this.toolbar);
+    
+    for (towerType in Towers) {
+      tool = new Element('div', { 'class': 'tool' }).inject(this.towerPalette);
+      tower = new Element('div', {
+        'class': 'tower ' + towerType,
+        html: '<div class="tower"><div class="base"></div><div class="turret"></div></div>',
+        title: towerType.replace(/([A-Z])/g, ' $1').replace(/^ /, '')
+      }).inject(tool);
+      
+      tower.dragginess = new Drag.Move(tower, {
+        precalculate: true, // TODO: fix for editable maps
+        includeMargins: false,
+        droppables: this.element.getElements('.cell'),
+        onEnter: function(tower, cell) {
+          // TODO: draw range circle
+          cell.addClass(self.canPlace(tower, cell) ? 'good' : 'bad');
+        },
+        onLeave: function(tower, cell) {
+          // TODO: erase range circle
+          cell.removeClass('good').removeClass('bad');
+        },
+        onDrop: function(tower, cell) {
+          tower.setStyles({ left:0, top:0, opacity:0 }).morph({ opacity:[0.0, 1.0] });
+          if (cell) {
+            cell.removeClass('good').removeClass('bad');
+            if (self.canPlace(tower, cell)) {
+          //     klass = $A(tower.classList).filter(function(c) { return Towers[c]; })[0];
+          //     newTower = new Element('div', {
+          //       'class': 'tower',
+          //       'data-type': klass
+          //     }).inject(cell);
+          //     self.towers.push(new (Towers[klass])(self, newTower));
+            }
+          }
+        }
+    	});
+      
+    }
   },
   serialize: function() {
     var self = this;
@@ -127,8 +170,34 @@ var Map = new Class({
       return cells.join(',');
     }).join('|');
     return result;
+  },
+  canPlace: function(object, cell) {
+    return cell.getChildren().length == 0 && cell.get('class').trim() == 'cell';
   }
 });
+
+var Tower = new Class({
+  Implements: Options,
+  Name: 'Tower',
+  options: {
+    range: 48,
+    damage: 10,
+    shotPower: 100,
+    chargeRate: 20
+  },
+  
+});
+
+var Towers = {
+  RifleTower: new Class({
+    Extends: Tower,
+    Name: 'RifleTower',
+  }),
+  LaserTower: new Class({
+    Extends: Tower,
+    Name: 'LaserTower',
+  })
+};
 
 var Editor = new Class({
   Extends: Map,
