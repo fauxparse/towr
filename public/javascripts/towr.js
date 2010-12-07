@@ -54,10 +54,10 @@ var Map = new Class({
     var w = this.columns * this.cellSize, h = this.rows * this.cellSize;
     this.canvas.set('width', w).set('height', h);
     var context = this.canvas.getContext('2d');
-    context.lineWidth = 16;
+    context.lineWidth = 14;
     context.strokeStyle = "#999";
     this.traceRoute(context);
-    context.lineWidth = 14;
+    context.lineWidth = 12;
     context.strokeStyle = "#ccc";
     this.traceRoute(context);
   },
@@ -209,7 +209,7 @@ var Tower = new Class({
     
     this.turret.setStyles({
       '-webkit-transform': 'rotate(' + theta + 'rad)',
-      '-moz-transform': 'rotate(45deg)'
+      '-moz-transform': 'rotate(' + theta + 'rad)'
     });
   }
 });
@@ -258,6 +258,7 @@ var Editor = new Class({
         self.resizeTo(Math.floor(size.height / self.cellSize), Math.floor(size.width / self.cellSize));
       }
     });
+    this.element.retrieve('resizer').detach();
     
     this.drawing = false;
     this.field.addEvent('mousedown:relay(.cell)', function(event, cell) {
@@ -295,11 +296,13 @@ var Editor = new Class({
     }
   },
   startEditing: function() {
+    this.element.retrieve('resizer').attach();
     this.editing = true;
     this.element.addClass('editing');
     this.editorTools.getElements('.tool')[0].fireEvent('click');
   },
   stopEditing: function() {
+    this.element.retrieve('resizer').detach();
     this.editing = false;
     this.element.removeClass('editing');
     if (this.selectedTool) { this.selectedTool.stopEditing(); }
