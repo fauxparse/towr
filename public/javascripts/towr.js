@@ -1,20 +1,33 @@
+String.implement({
+  times: function(n) {
+    var s = this;
+    for (i = n - 1; i > 0; i--) { s += this; }
+    return s;
+  }
+});
+
 var Map = new Class({
   initialize: function(element) {
     var self = this;
     this.element = element;
     this.element.instance = self;
     this.field = element.getElements('.field')[0]
-      .addEvent('mousemove', function(event) {
-        var xy = self.field.getPosition();
-        var x = event.page.x - xy.x, y = event.page.y - xy.y;
-        self.towers.each(function(tower) { tower.aimAt(x, y) });
-        return true;
+      .addEvents({
+        mousemove: function(event) {
+          var xy = self.field.getPosition();
+          var x = event.page.x - xy.x, y = event.page.y - xy.y;
+          self.towers.each(function(tower) { tower.aimAt(x, y) });
+          return true;
+        },
+        mousedown: function() { this.instance.blur(); }
       });
+    this.field.instance = self;
     this.canvas = new Element('canvas')
       .inject(this.field)
       .addEvent('draw', function() {
         self.draw();
       });
+    this.towerCanvas = new Element('canvas').inject(this.field);
     this.cellSize = this.field.getElements('.cell')[0].getSize().x;
     this.resizeTo(this.field.getChildren('.row').length, this.field.getChildren('.row')[0].getChildren('.cell').length);
     this.element.setStyles({ width: (this.columns * this.cellSize) + 'px' });
@@ -47,6 +60,8 @@ var Map = new Class({
     for (j = 0; j < re.length; j++) {
       j < self.rows ? re[j].show() : re[j].hide();
     }
+    var w = this.columns * this.cellSize, h = this.rows * this.cellSize;
+    this.element.getElements('canvas').each(function(canvas) { canvas.set('width', w).set('height', h); });
     this.canvas.fireEvent('draw');
   },
   draw: function() {
@@ -133,26 +148,48 @@ var Map = new Class({
         precalculate: true, // TODO: fix for editable maps
         includeMargins: false,
         droppables: this.element.getElements('.cell'),
+        onStart: function() {
+          self.blur();
+        },
         onEnter: function(tower, cell) {
-          // TODO: draw range circle
+          klass = tower.get('class').split(' ').filter(function(c) { return Towers[c]; })[0];
+          var t = new (Towers[klass])();
+          self.towerCanvas.drawRangeCircle(cell, t.options.range);
           cell.addClass(self.canPlace(tower, cell) ? 'good' : 'bad');
         },
         onLeave: function(tower, cell) {
-          // TODO: erase range circle
+          self.towerCanvas.clear();
           cell.removeClass('good').removeClass('bad');
         },
         onDrop: function(tower, cell) {
+          self.towerCanvas.clear();
           if (cell) {
             cell.removeClass('good').removeClass('bad');
             if (self.canPlace(tower, cell)) {
               klass = tower.get('class').split(' ').filter(function(c) { return Towers[c]; })[0];
-              new (Towers[klass])(self, cell);
+              new (Towers[klass])(self, cell).element;
             }
           }
           tower.setStyles({ left:0, top:0, opacity:0 }).morph({ opacity:[0.0, 1.0] });
         }
     	});
-      
+    }
+    
+    this.towerCanvas.drawRangeCircle = function(cell, range) {
+      var context = this.getContext('2d');
+      context.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      context.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+      context.beginPath();
+      context.lineWidth = 1;
+      context.arc((cell.x * 2 + 1) * self.cellSize / 2, (cell.y * 2 + 1) * self.cellSize / 2, range, 0, Math.PI * 2);
+      context.closePath();
+      context.fill();
+      context.stroke();
+    }
+    
+    this.towerCanvas.clear = function() {
+      var w = self.columns * self.cellSize, h = self.rows * self.cellSize;
+      this.set('width', w).set('height', h);
     }
   },
   serialize: function() {
@@ -177,6 +214,9 @@ var Map = new Class({
   },
   canPlace: function(object, cell) {
     return cell.getChildren().length == 0 && cell.get('class').trim() == 'cell';
+  },
+  blur: function() {
+    this.field.getElements('.tower:focus').each(function(t) { t.blur() });
   }
 });
 
@@ -189,19 +229,53 @@ var Tower = new Class({
     shotPower: 100,
     chargeRate: 20
   },
-  initialize: function(map, cell) {
+  initialize: function(map, cell, options) {
     var self = this;
-    self.map = map;
-    self.element = new Element('div', {
-      html: Tower.html,
-      class: 'tower ' + self.Name
-    }).inject(cell);
-    self.base = self.element.getElements('.base')[0];
-    self.turret = self.element.getElements('.turret')[0];
-    self.map.towers.push(self);
-    self.x = (cell.x * 2 + 1) * self.map.cellSize / 2;
-    self.y = (cell.y * 2 + 1) * self.map.cellSize / 2;
-    new Element('div', { 'class':'effect' }).inject(this.turret);
+    self.setOptions(options);
+    if (map && cell) {
+      self.map = map;
+      self.cell = cell;
+      self.element = new Element('div', {
+        html: Tower.html,
+        class: 'tower ' + self.Name,
+        tabindex: -1
+      }).inject(cell);
+      self.element.instance = self;
+      self.base = self.element.getElements('.base')[0];
+      self.turret = self.element.getElements('.turret')[0];
+      self.map.towers.push(self);
+      self.x = (cell.x * 2 + 1) * self.map.cellSize / 2;
+      self.y = (cell.y * 2 + 1) * self.map.cellSize / 2;
+      self.level = 1;
+      new Element('div', { 'class':'effect' }).inject(this.turret);
+      
+      self.controls = new Element('div', {
+        'class': 'controls',
+        html: '<a href="#" class="upgrade">★</a><a href="#" class="sell">$</a>'
+      }).inject(self.element);
+      self.controls.getChildren('a.upgrade').addEvents({
+        mousedown: function() { self.upgrade(); return false; },
+        click: function() { return false; }
+      });
+      self.controls.getChildren('a.sell').addEvents({
+        mousedown: function() { self.sell(); return false; },
+        click: function() { return false; }
+      });
+      
+      self.element.addEvents({
+        mousedown: function(event) { this.focus(); event.stop(); },
+        focus: self.focus,
+        blur: self.blur
+      });
+      
+      self.pips = new Element('div', { 'class':'pips' }).inject(self.element);
+      self.updateView();
+    }
+  },
+  powerUp: function() { return Math.pow(1.1, this.level - 1); },
+  range: function() { return this.options.range * this.powerUp(); },
+  updateView: function() {
+    this.pips.set('html', '★'.times(this.level));
   },
   aimAt: function(x, y) {
     var dy = this.y - y,
@@ -212,6 +286,28 @@ var Tower = new Class({
       '-webkit-transform': 'rotate(' + theta + 'rad)',
       '-moz-transform': 'rotate(' + theta + 'rad)'
     });
+  },
+  focus: function(event) {
+    var self = this.instance;
+    self.map.towerCanvas.drawRangeCircle(self.cell, self.range());
+  },
+  blur: function(event) {
+    this.instance.map.towerCanvas.clear();
+  },
+  upgrade: function() {
+    if (this.level < 5) {
+      this.level++;
+      this.updateView();
+      if (this.level >= 5) { this.controls.getChildren('.upgrade').tween('opacity', 1.0, 0.5); }
+      this.map.towerCanvas.clear();
+      this.map.towerCanvas.drawRangeCircle(this.cell, this.range());
+      this.element.focus();
+    }
+  },
+  sell: function() {
+    // TODO: refund money
+    this.element.fireEvent('blur').destroy();
+    this.map.towers.erase(this);
   }
 });
 
