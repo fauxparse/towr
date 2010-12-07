@@ -105,6 +105,7 @@
 }
 
 .map .field {
+  position: relative;
   -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 4px;
   -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 4px;
 }
@@ -236,10 +237,271 @@
   margin: -8px;
   width: 0px;
   height: 0px;
-  overflow: hidden;
   border-bottom: 16px solid #999;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
+}
+
+.RifleTower .base,
+.LaserTower .base {
+  margin: -12px;
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-border-radius: 12px;
+  -moz-border-radius: 12px;
+  -webkit-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px;
+  -moz-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px;
+}
+
+.RifleTower .base:after {
+  z-index: 1;
+  content: '.';
+  text-indent: -3em;
+  overflow: hidden;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -8px;
+  border: none;
+  background: #ccc;
+  width: 16px;
+  height: 16px;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
+}
+
+.RifleTower .turret {
+  border-top: none;
+  border-bottom: none;
+  border-left: 1px solid #666;
+  border-right: 1px solid #666;
+  margin: -14px -2px;
+  width: 2px;
+  height: 14px;
+  background: #999;
+  -webkit-transform-origin: 50% 100%;
+  -moz-transform-origin: 50% 100%;
+  -webkit-border-top-left-radius: 2px;
+  -webkit-border-top-right-radius: 2px;
+  -moz-border-radius-topleft: 2px;
+  -moz-border-radius-topright: 2px;
+}
+
+.LaserTower .base:before,
+.LaserTower .base:after {
+  z-index: 1;
+  content: '.';
+  text-indent: -3em;
+  overflow: hidden;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #bbb;
+  width: 14px;
+  height: 14px;
+  margin: -7px;
+  -webkit-border-radius: 7px;
+  -moz-border-radius: 7px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px;
+}
+
+.LaserTower .base:before {
+  background: #aaa;
+  width: 20px;
+  height: 20px;
+  margin: -10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+}
+
+.LaserTower .turret {
+  z-index: 2;
+  border: none;
+  background: #ccc;
+  width: 8px;
+  height: 8px;
+  margin: -4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 3px 1px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 3px 1px;
+}
+
+@-webkit-keyframes laser {
+  0% {
+    width: 8px;
+    height: 8px;
+    margin: -4px;
+    opacity: 1;
+    -webkit-border-radius: 4px;
+  }
+  100% {
+    width: 24px;
+    height: 24px;
+    margin: -12px;
+    opacity: 0;
+    -webkit-border-radius: 12px;
+  }
+}
+
+.LaserTower .ring {
+  z-index: 1;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -8px;
+  width: 16px;
+  height: 16px;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  -webkit-box-shadow: #ed1c24 0px 0px 2px, inset #ed1c24 0px 0px 2px;
+  -webkit-animation-name: laser;
+  -webkit-animation-duration: 1s;
+  -webkit-animation-iteration-count: infinite;
+}
+
+.IceTower .base {
+  margin: -12px;
+  width: 24px;
+  height: 24px;
+  background: #ccc;
+  -webkit-border-radius: 12px;
+  -moz-border-radius: 12px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px;
+}
+
+.IceTower .base:after {
+  content: '.';
+  text-indent: -3em;
+  overflow: hidden;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #aaa;
+  width: 14px;
+  height: 14px;
+  margin: -7px;
+  -webkit-border-radius: 7px;
+  -moz-border-radius: 7px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px;
+}
+
+.IceTower .turret {
+  width: 24px;
+  height: 12px;
+  background: #999;
+  border: none;
+  margin: -8px -12px;
+  -webkit-border-radius: 12px 6px;
+  -moz-border-radius: 12px 6px;
+  -webkit-box-shadow: inset rgba(0, 0, 0, 0.25) 0px -2px 1px, inset rgba(255, 255, 255, 0.15) 0px 3px 3px;
+  -moz-box-shadow: inset rgba(0, 0, 0, 0.25) 0px -2px 1px, inset rgba(255, 255, 255, 0.15) 0px 3px 3px;
+  -webkit-transform-origin: 50% 8px;
+  -moz-transform-origin: 50% 8px;
+}
+
+.IceTower .turret:after {
+  content: '.';
+  text-indent: -3em;
+  overflow: hidden;
+  position: absolute;
+  left: 50%;
+  top: -1px;
+  width: 2px;
+  height: 2px;
+  margin: 0px -2px;
+  background: #00aeef;
+  border: 1px solid #bfebfb;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  -webkit-box-shadow: #00aeef 0px 0px 4px;
+  -moz-box-shadow: #00aeef 0px 0px 4px;
+}
+
+.IceTower .turret:before {
+  content: '.';
+  text-indent: -3em;
+  overflow: hidden;
+  position: absolute;
+  left: 50%;
+  top: 1px;
+  width: 2px;
+  height: 5px;
+  margin: 0px -1px;
+  background: #00aeef;
+}
+
+.GrenadeTower .base {
+  background: none;
+  overflow: hidden;
+  text-align: center;
+  color: #333;
+  font-size: 44px;
+  vertical-align: top;
+  line-height: 24px;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px;
+}
+
+.GrenadeTower .base:before {
+  content: '×';
+  position: relative;
+  top: -2px;
+  left: -1px;
+}
+
+.GrenadeTower .turret {
+  border: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -8px -12px;
+  width: 24px;
+  height: 9px;
+  background: #6a952f;
+  -webkit-border-top-left-radius: 5px 8px;
+  -webkit-border-top-right-radius: 5px 8px;
+  -moz-border-radius-topleft: 5px 8px;
+  -moz-border-radius-topright: 5px 8px;
+  -webkit-transform-origin: 50% 100%;
+  -moz-transform-origin: 50% 100%;
+}
+
+.GrenadeTower .turret:before {
+  content: '.';
+  text-indent: -3em;
+  overflow: hidden;
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  margin: 0px -7px;
+  background: #476320;
+  width: 14px;
+  height: 8px;
+  -webkit-border-bottom-left-radius: 3px 8px;
+  -webkit-border-bottom-right-radius: 3px 8px;
+  -moz-border-radius-bottomleft: 3px 8px;
+  -moz-border-radius-bottomright: 3px 8px;
+}
+
+.GrenadeTower .turret:after {
+  content: '.';
+  text-indent: -3em;
+  overflow: hidden;
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  width: 4px;
+  height: 7px;
+  margin: 0px -2px;
+  background: #333;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
 }
 
 /* }}} */

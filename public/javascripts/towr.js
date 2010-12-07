@@ -3,7 +3,13 @@ var Map = new Class({
     var self = this;
     this.element = element;
     this.element.instance = self;
-    this.field = element.getElements('.field')[0];
+    this.field = element.getElements('.field')[0]
+      .addEvent('mousemove', function(event) {
+        var xy = self.field.getPosition();
+        var x = event.page.x - xy.x, y = event.page.y - xy.y;
+        self.towers.each(function(tower) { tower.aimAt(x, y) });
+        return true;
+      });
     this.canvas = new Element('canvas')
       .inject(this.field)
       .addEvent('draw', function() {
@@ -12,6 +18,8 @@ var Map = new Class({
     this.cellSize = this.field.getElements('.cell')[0].getSize().x;
     this.resizeTo(this.field.getChildren('.row').length, this.field.getChildren('.row')[0].getChildren('.cell').length);
     this.element.setStyles({ width: (this.columns * this.cellSize) + 'px' });
+    
+    this.towers = [];
     
     this.createToolbar();
   },
@@ -61,7 +69,7 @@ var Map = new Class({
       for (i = 0; i < self.columns; i++) {
         var cell = ce[i];
         var x = i * self.cellSize, y = j * self.cellSize;
-        $A(cell.classList).each(function(c) {
+        (cell.get('class').split(' ')).each(function(c) {
           if (t = /route-(\d+)/.exec(c)) {
             switch (parseInt(t[1])) {
               case 5:
@@ -117,7 +125,7 @@ var Map = new Class({
       tool = new Element('div', { 'class': 'tool' }).inject(this.towerPalette);
       tower = new Element('div', {
         'class': 'tower ' + towerType,
-        html: '<div class="tower"><div class="base"></div><div class="turret"></div></div>',
+        html: Tower.html,
         title: towerType.replace(/([A-Z])/g, ' $1').replace(/^ /, '')
       }).inject(tool);
       
@@ -134,19 +142,14 @@ var Map = new Class({
           cell.removeClass('good').removeClass('bad');
         },
         onDrop: function(tower, cell) {
-          tower.setStyles({ left:0, top:0, opacity:0 }).morph({ opacity:[0.0, 1.0] });
           if (cell) {
             cell.removeClass('good').removeClass('bad');
             if (self.canPlace(tower, cell)) {
-              
-          //     klass = $A(tower.classList).filter(function(c) { return Towers[c]; })[0];
-          //     newTower = new Element('div', {
-          //       'class': 'tower',
-          //       'data-type': klass
-          //     }).inject(cell);
-          //     self.towers.push(new (Towers[klass])(self, newTower));
+              klass = tower.get('class').split(' ').filter(function(c) { return Towers[c]; })[0];
+              new (Towers[klass])(self, cell);
             }
           }
+          tower.setStyles({ left:0, top:0, opacity:0 }).morph({ opacity:[0.0, 1.0] });
         }
     	});
       
@@ -186,8 +189,32 @@ var Tower = new Class({
     shotPower: 100,
     chargeRate: 20
   },
-  
+  initialize: function(map, cell) {
+    var self = this;
+    self.map = map;
+    self.element = new Element('div', {
+      html: Tower.html,
+      class: 'tower ' + self.Name
+    }).inject(cell);
+    self.base = self.element.getElements('.base')[0];
+    self.turret = self.element.getElements('.turret')[0];
+    self.map.towers.push(self);
+    self.x = (cell.x * 2 + 1) * self.map.cellSize / 2;
+    self.y = (cell.y * 2 + 1) * self.map.cellSize / 2;
+  },
+  aimAt: function(x, y) {
+    var dy = this.y - y,
+        dx = this.x - x,
+        theta = Math.atan2(dy, dx) - Math.PI/2;
+    
+    this.turret.setStyles({
+      '-webkit-transform': 'rotate(' + theta + 'rad)',
+      '-moz-transform': 'rotate(45deg)'
+    });
+  }
 });
+
+Tower.html = '<div class="base"></div><div class="turret"></div>';
 
 var Towers = {
   RifleTower: new Class({
@@ -197,6 +224,19 @@ var Towers = {
   LaserTower: new Class({
     Extends: Tower,
     Name: 'LaserTower',
+    initialize: function(map, cell) {
+      this.parent(map, cell);
+      new Element('div', { 'class':'ring' }).inject(this.element);
+    },
+    aimAt: function(x, y) {}
+  }),
+  IceTower: new Class({
+    Extends: Tower,
+    Name: 'IceTower',
+  }),
+  GrenadeTower: new Class({
+    Extends: Tower,
+    Name: 'GrenadeTower',
   })
 };
 
@@ -336,7 +376,7 @@ Editor.Tools = {
     Caption: '✎',
     mouseDown: function(event, cell) {
       var cp = cell.getPosition(),
-          q = this._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y);
+          q = this._cellQuadrant(event.page.x - cp.x, event.page.y - cp.y);
       if (q) {
         var x = cell.x * 2 + ((q == NORTH || q == SOUTH) ? 1 : 0) + (q == EAST ? 2 : 0),
             y = cell.y * 2 + ((q == WEST || q == EAST) ? 1 : 0) + (q == SOUTH ? 2 : 0);
@@ -348,7 +388,7 @@ Editor.Tools = {
     mouseMove: function(event, cell) {
       if (this.drawing) {
         var cp = cell.getPosition(),
-            q = this._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y);
+            q = this._cellQuadrant(event.page.x - cp.x, event.page.y - cp.y);
 
         if (q) {
           var x = cell.x * 2 + ((q == NORTH || q == SOUTH) ? 1 : 0) + (q == EAST ? 2 : 0),
@@ -404,7 +444,7 @@ Editor.Tools = {
     Caption: 'IN',
     mouseUp: function(event, cell) {
       var cp = cell.getPosition(),
-          q = this._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y),
+          q = this._cellQuadrant(event.page.x - cp.x, event.page.y - cp.y),
           isWest = (cell.x == 0),
           isEast = (cell.x == this.editor.columns - 1),
           isNorth = (cell.y == 0),
@@ -427,7 +467,7 @@ Editor.Tools = {
     Caption: 'OUT',
     mouseUp: function(event, cell) {
       var cp = cell.getPosition(),
-          q = this._cellQuadrant(event.client.x - cp.x, event.client.y - cp.y),
+          q = this._cellQuadrant(event.page.x - cp.x, event.page.y - cp.y),
           isWest = (cell.x == 0),
           isEast = (cell.x == this.editor.columns - 1),
           isNorth = (cell.y == 0),
