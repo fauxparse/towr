@@ -201,6 +201,7 @@ var Tower = new Class({
     self.map.towers.push(self);
     self.x = (cell.x * 2 + 1) * self.map.cellSize / 2;
     self.y = (cell.y * 2 + 1) * self.map.cellSize / 2;
+    new Element('div', { 'class':'effect' }).inject(this.turret);
   },
   aimAt: function(x, y) {
     var dy = this.y - y,
@@ -224,10 +225,6 @@ var Towers = {
   LaserTower: new Class({
     Extends: Tower,
     Name: 'LaserTower',
-    initialize: function(map, cell) {
-      this.parent(map, cell);
-      new Element('div', { 'class':'ring' }).inject(this.element);
-    },
     aimAt: function(x, y) {}
   }),
   IceTower: new Class({

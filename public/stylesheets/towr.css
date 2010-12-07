@@ -291,6 +291,36 @@
   -moz-border-radius-topright: 2px;
 }
 
+.RifleTower .effect,
+.RifleTower .effect:after,
+.GrenadeTower .effect,
+.GrenadeTower .effect:after {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  margin: 0px -4px;
+  width: 8px;
+  height: 12px;
+  background: #ed1c24;
+  opacity: 0;
+  -webkit-border-top-left-radius: 4px 10px;
+  -webkit-border-top-right-radius: 4px 10px;
+  -webkit-border-bottom-left-radius: 2px;
+  -webkit-border-bottom-right-radius: 2px;
+}
+
+.RifleTower .effect:after,
+.GrenadeTower .effect:after {
+  content: '.';
+  text-indent: -3em;
+  overflow: hidden;
+  background: #ff9;
+  top: 3px;
+  height: 8px;
+  width: 4px;
+  margin: 0px -2px;
+}
+
 .LaserTower .base:before,
 .LaserTower .base:after {
   z-index: 1;
@@ -349,7 +379,7 @@
   }
 }
 
-.LaserTower .ring {
+.LaserTower .effect {
   z-index: 1;
   position: absolute;
   left: 50%;
@@ -507,6 +537,8 @@
   -webkit-border-radius: 2px;
   -moz-border-radius: 2px;
 }
+
+.GrenadeTower .effect { top: -14px; }
 
 /* }}} */
 
