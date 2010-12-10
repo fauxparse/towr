@@ -33,6 +33,7 @@ var Map = new Class({
     this.element.setStyles({ width: (this.columns * this.cellSize) + 'px' });
     
     this.towers = [];
+    this.life = 1000;
     
     this.createToolbar();
   },
@@ -132,6 +133,11 @@ var Map = new Class({
     this.toolbar = new Element('div', {
       'class': 'toolbar'
     }).inject(this.toolbarContainer);
+    
+    this.lifeBar = new Element('div', {
+      'class': 'life'
+    }).inject(this.toolbar);
+    
     this.towerPalette = new Element('div', {
       'class': 'towers'
     }).inject(this.toolbar);
