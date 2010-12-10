@@ -234,7 +234,7 @@ var Map = new Class({
     }).flatten().getRandom();
   },
   route: function(cell, from) {
-    return cell ? this.routes(cell).filter(function(r) { return (r && from > 0); }).getRandom() : null;
+    return cell ? this.routes(cell).filter(function(r) { return (r & from) > 0; }).getRandom() : null;
   },
   routes: function(cell) {
     return cell.get('class').split(' ')
@@ -455,7 +455,7 @@ var Creep = new Class({
       if (r = this.map.route(nextMove.cell, nextMove.from)) {
         this.cell = nextMove.cell;
         this.from = nextMove.from;
-        this.route = this.map.route(this.cell, this.from);
+        this.route = r;
       } else {
         this.from = this.route - this.from;
       }
