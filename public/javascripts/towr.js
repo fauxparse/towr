@@ -33,6 +33,7 @@ var Map = new Class({
     this.element.setStyles({ width: (this.columns * this.cellSize) + 'px' });
     
     this.towers = [];
+    this.creeps = [];
     this.life = 1000;
     
     this.createToolbar();
@@ -223,6 +224,38 @@ var Map = new Class({
   },
   blur: function() {
     this.field.getElements('.tower:focus').each(function(t) { t.blur() });
+  },
+  randomEntry: function() {
+    var self = this;
+    return [NORTH, EAST, SOUTH, WEST].map(function(direction) {
+      return self.field.getElements('.entry-' + direction).map(function(cell) {
+        return { cell: cell, point: direction };
+      });
+    }).flatten().getRandom();
+  },
+  route: function(cell, from) {
+    return cell ? this.routes(cell).filter(function(r) { return (r && from > 0); }).getRandom() : null;
+  },
+  routes: function(cell) {
+    return cell.get('class').split(' ')
+      .map(function(c) { return (d = /^route-(\d+)/.exec(c)) ? parseInt(d[1]) : null })
+      .clean();
+  },
+  cell: function(x, y) {
+    return (x < 0 || y < 0 || x >= this.columns || y >= this.rows) ? null :
+      this.field.getElement('.row:nth-child(' + (y + 1) + ')').getElement('.cell:nth-child(' + (x + 1) + ')');
+  },
+  nextCell: function(cell, exit) {
+    switch (exit) {
+      case NORTH:
+        return { cell: this.cell(cell.x, cell.y - 1), from: SOUTH };
+      case EAST:
+        return { cell: this.cell(cell.x + 1, cell.y), from: WEST };
+      case SOUTH:
+        return { cell: this.cell(cell.x, cell.y + 1), from: NORTH };
+      case WEST:
+        return { cell: this.cell(cell.x - 1, cell.y), from: EAST };
+    }
   }
 });
 
@@ -247,8 +280,8 @@ var Tower = new Class({
         tabindex: -1
       }).inject(cell);
       self.element.instance = self;
-      self.base = self.element.getElements('.base')[0];
-      self.turret = self.element.getElements('.turret')[0];
+      self.base = self.element.getElement('.base');
+      self.turret = self.element.getElement('.turret');
       self.map.towers.push(self);
       self.x = (cell.x * 2 + 1) * self.map.cellSize / 2;
       self.y = (cell.y * 2 + 1) * self.map.cellSize / 2;
@@ -339,6 +372,107 @@ var Towers = {
   })
 };
 
+var Creep = new Class({
+  Implements: Options,
+  Name: 'Creep',
+  options: {
+    speed: 0.05,
+    health: 100
+  },
+  initialize: function(map, options) {
+    var self = this;
+    this.setOptions(options);
+    this.health = this.options.health;
+    this.enter(map);
+  },
+  enter: function(map) {
+    var self = this;
+    
+    this.element = new Element('div', {
+      'class': 'creep ' + this.Name,
+      html: '<small class="health">' + this.health + '</small>'
+    }).inject(map.field);
+    this.element.instance = this;
+    
+    setInterval(function() { self.update() }, 100);
+    
+    this.map = map;
+    var entry = this.map.randomEntry();
+    this.cell = entry.cell;
+    this.route = map.route(entry.cell, entry.point);
+    this.distance = 0.0;
+    this.from = entry.point;
+    this.map.creeps.push(this);
+    this.updatePosition();
+  },
+  update: function() {
+    this.travel(this.speed());
+  },
+  updatePosition: function() {
+    var s = this.map.cellSize,
+        r = this.map.cellSize / 2,
+        cx = this.cell.x * s,
+        cy = this.cell.y * s;
+    switch(this.route) {
+    case 5:
+      this.x = cx + r;
+      this.y = cy + s * (this.from == NORTH ? this.distance : (1 - this.distance));
+      break;
+    case 10:
+      this.x = cx + s * (this.from == WEST ? this.distance : (1 - this.distance));
+      this.y = cy + r;
+      break;
+    case 3:
+      theta = ((this.from == NORTH ? this.distance : (1.0 - this.distance)) + 2.0) * Math.PI / 2;
+      this.x = cx + s + r * Math.cos(theta);
+      this.y = cy - r * Math.sin(theta);
+      break;
+    case 6:
+      theta = ((this.from == EAST ? this.distance : (1.0 - this.distance)) + 1.0) * Math.PI / 2;
+      this.x = cx + s + r * Math.cos(theta);
+      this.y = cy + s - r * Math.sin(theta);
+      break;
+    case 12:
+      theta = ((this.from == SOUTH ? this.distance : (1.0 - this.distance))) * Math.PI / 2;
+      this.x = cx + r * Math.cos(theta);
+      this.y = cy + s - r * Math.sin(theta);
+      break;
+    case 9:
+      theta = ((this.from == WEST ? this.distance : (1.0 - this.distance)) + 3.0) * Math.PI / 2;
+      this.x = cx + r * Math.cos(theta);
+      this.y = cy - r * Math.sin(theta);
+      break;
+    }
+    this.element.setStyles({
+      left: this.x + 'px',
+      top: this.y + 'px'
+    });
+  },
+  travel: function(speed) {
+    if ((this.distance += speed) > 1.0) {
+      // TODO: check exit
+      var nextMove = this.map.nextCell(this.cell, this.route - this.from);
+      if (r = this.map.route(nextMove.cell, nextMove.from)) {
+        this.cell = nextMove.cell;
+        this.from = nextMove.from;
+        this.route = this.map.route(this.cell, this.from);
+      } else {
+        this.from = this.route - this.from;
+      }
+      this.distance -= 1.0;
+    }
+    
+    this.updatePosition();
+  },
+  speed: function() {
+    return this.options.speed;
+  },
+  die: function() {
+    this.map.creeps.erase(this);
+    this.element.destroy();
+  }
+});
+
 var Editor = new Class({
   Extends: Map,
   initialize: function(element) {
@@ -398,7 +532,7 @@ var Editor = new Class({
     this.element.retrieve('resizer').attach();
     this.editing = true;
     this.element.addClass('editing');
-    this.editorTools.getElements('.tool')[0].fireEvent('click');
+    this.editorTools.getElement('.tool').fireEvent('click');
   },
   stopEditing: function() {
     this.element.retrieve('resizer').detach();
@@ -512,8 +646,7 @@ Editor.Tools = {
                 var p1 = cx1 == 1 ? (cy1 ? SOUTH : NORTH) : (cx1 ? EAST : WEST);
                 var p2 = cx2 == 1 ? (cy2 ? SOUTH : NORTH) : (cx2 ? EAST : WEST);
 
-                this.editor.field.getElements('.row:nth-child(' + (cy + 1) + ')')[0].getElements('.cell:nth-child(' + (cx + 1) + ')')
-                  .addClass('route-' + (p1 + p2));
+                this.editor.cell(cx, cy).addClass('route-' + (p1 + p2));
                 this.editor.draw();
               } else {
                 this.drawing.shift();
