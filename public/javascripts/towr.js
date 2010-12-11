@@ -1,14 +1,21 @@
+var TICK = 75;
+
 String.implement({
   times: function(n) {
     var s = this;
-    for (i = n - 1; i > 0; i--) { s += this; }
+    for (i = n; i > 1; i--) { s += this; }
     return s;
   }
 });
 
 var Map = new Class({
-  initialize: function(element) {
+  Implements: Options,
+  options: {
+    life: 1000
+  },
+  initialize: function(element, options) {
     var self = this;
+    this.setOptions(options);
     this.element = element;
     this.element.instance = self;
     this.field = element.getElements('.field')[0]
@@ -34,9 +41,41 @@ var Map = new Class({
     
     this.towers = [];
     this.creeps = [];
-    this.life = 1000;
+    this.waves = [];
+    this.life = this.options.life;
     
     this.createToolbar();
+  },
+  start: function() {
+    var self = this;
+    if (!this.paused && !this.waves.length) {
+      new Wave(this).start();
+    }
+    this.paused = false;
+    (function(){
+      self.update();
+      self.ticker = setTimeout(arguments.callee, TICK);
+    })();
+    this.buttons.start.hide();
+    this.buttons.pause.show();
+  },
+  pause: function() {
+    this.paused = true;
+    clearTimeout(this.ticker);
+    this.buttons.start.show();
+    this.buttons.pause.hide();
+  },
+  update: function() {
+    this.waves.each(function(wave) { wave.update(); });
+    this.towers.each(function(tower) { tower.update(); });
+    this.creeps.each(function(creep) { creep.update(); });
+    
+    if (!this.creeps.length) {
+      this.pause();
+    }
+  },
+  waveFinished: function(wave) {
+    this.waves.erase(wave);
   },
   resizeTo: function(rows, columns) {
     var self = this;
@@ -138,6 +177,22 @@ var Map = new Class({
     this.lifeBar = new Element('div', {
       'class': 'life'
     }).inject(this.toolbar);
+    
+    this.buttons = new Element('div', {
+      'class': 'buttons'
+    }).inject(this.toolbar);
+    
+    this.buttons.start = new Element('a', {
+      'class': 'start button',
+      html: '▶',
+      href: '#'
+    }).inject(this.buttons)
+    this.buttons.start.addEvent('click', function() { self.start(); return false; });
+    this.buttons.pause = new Element('a', {
+      'class': 'pause button',
+      html: '||',
+      href: '#'
+    }).inject(this.buttons).hide().addEvent('click', function() { self.pause(); return false; });
     
     this.towerPalette = new Element('div', {
       'class': 'towers'
@@ -256,6 +311,20 @@ var Map = new Class({
       case WEST:
         return { cell: this.cell(cell.x - 1, cell.y), from: EAST };
     }
+  },
+  depleteLife: function(amount) {
+    this.life = Math.max(0, this.life - amount);
+
+    this.field.shake('left', 2, 3);
+
+    p = (this.life * 1.0) / this.options.life;
+    r = Math.round(141 * p + 237 * (1 - p));
+    g = Math.round(198 * p + 28 * (1 - p));
+    b = Math.round(63 * p + 36 * (1 - p));
+    this.lifeBar.setStyles({
+      width: Math.round(p * 136) + 'px',
+      'background-color': 'rgb(' + r + ',' + g + ',' + b + ')'
+    });
   }
 });
 
@@ -390,11 +459,10 @@ var Creep = new Class({
     
     this.element = new Element('div', {
       'class': 'creep ' + this.Name,
-      html: '<small class="health">' + this.health + '</small>'
     }).inject(map.field);
     this.element.instance = this;
-    
-    setInterval(function() { self.update() }, 100);
+    this.healthBar = new Element('small', { 'class':'heath', html:this.health }).inject(this.element)
+    this.body = new Element('div', { 'class':'body' }).inject(this.element);
     
     this.map = map;
     var entry = this.map.randomEntry();
@@ -417,49 +485,64 @@ var Creep = new Class({
     case 5:
       this.x = cx + r;
       this.y = cy + s * (this.from == NORTH ? this.distance : (1 - this.distance));
+      this.angle = (this.from == NORTH) ? Math.PI / 2 : Math.PI * 3 / 2;
       break;
     case 10:
       this.x = cx + s * (this.from == WEST ? this.distance : (1 - this.distance));
       this.y = cy + r;
+      this.angle = (this.from == WEST) ? 0 : Math.PI;
       break;
     case 3:
       theta = ((this.from == NORTH ? this.distance : (1.0 - this.distance)) + 2.0) * Math.PI / 2;
       this.x = cx + s + r * Math.cos(theta);
       this.y = cy - r * Math.sin(theta);
+      this.angle = (this.from == NORTH ? Math.PI * 3 / 2 : Math.PI / 2) - theta;
       break;
     case 6:
       theta = ((this.from == EAST ? this.distance : (1.0 - this.distance)) + 1.0) * Math.PI / 2;
       this.x = cx + s + r * Math.cos(theta);
       this.y = cy + s - r * Math.sin(theta);
+      this.angle = (this.from == EAST ? Math.PI * 3 / 2 : Math.PI / 2) - theta;
       break;
     case 12:
       theta = ((this.from == SOUTH ? this.distance : (1.0 - this.distance))) * Math.PI / 2;
       this.x = cx + r * Math.cos(theta);
       this.y = cy + s - r * Math.sin(theta);
+      this.angle = (this.from == SOUTH ? Math.PI * 3 / 2 : Math.PI / 2) - theta;
       break;
     case 9:
       theta = ((this.from == WEST ? this.distance : (1.0 - this.distance)) + 3.0) * Math.PI / 2;
       this.x = cx + r * Math.cos(theta);
       this.y = cy - r * Math.sin(theta);
+      this.angle = (this.from == WEST ? Math.PI * 3 / 2 : Math.PI / 2) - theta;
       break;
     }
     this.element.setStyles({
       left: this.x + 'px',
-      top: this.y + 'px'
+      top: this.y + 'px',
+      '-webkit-transform': 'rotate(' + this.angle + 'rad)',
+      '-moz-transform': 'rotate(' + this.angle + 'rad)'
     });
+    this.healthBar.setStyles({
+      '-webkit-transform': 'rotate(' + -this.angle + 'rad)',
+      '-moz-transform': 'rotate(' + -this.angle + 'rad)'
+    })
   },
   travel: function(speed) {
     if ((this.distance += speed) > 1.0) {
-      // TODO: check exit
-      var nextMove = this.map.nextCell(this.cell, this.route - this.from);
-      if (r = this.map.route(nextMove.cell, nextMove.from)) {
-        this.cell = nextMove.cell;
-        this.from = nextMove.from;
-        this.route = r;
+      if (this.cell.match('.exit-' + NORTH + ',.exit-' + EAST + ',.exit-' + WEST + ',.exit-' + SOUTH)) {
+        this.escape();
       } else {
-        this.from = this.route - this.from;
+        var nextMove = this.map.nextCell(this.cell, this.route - this.from);
+        if (r = this.map.route(nextMove.cell, nextMove.from)) {
+          this.cell = nextMove.cell;
+          this.from = nextMove.from;
+          this.route = r;
+        } else {
+          this.from = this.route - this.from;
+        }
+        this.distance -= 1.0;
       }
-      this.distance -= 1.0;
     }
     
     this.updatePosition();
@@ -469,7 +552,47 @@ var Creep = new Class({
   },
   die: function() {
     this.map.creeps.erase(this);
-    this.element.destroy();
+    this.element.morph({ opacity:[1.0, 0.0] });
+    this._destroy.pass(this.element).delay(1000);
+  },
+  _destroy: function(element) {
+    element.destroy();
+  },
+  escape: function() {
+    this.map.depleteLife(this.health);
+    this.die();
+  }
+});
+
+var Wave = new Class({
+  Implements: Options,
+  options: {
+    count: 10,
+    interval: 2000 / TICK,
+    creeps: [ Creep ]
+  },
+  initialize: function(map, options) {
+    this.setOptions(options || {});
+    this.map = map;
+    this.count = 0;
+    this.interval = 0;
+  },
+  start: function() {
+    this.map.waves.push(this);
+  },
+  update: function() {
+    if (this.interval <= 0) {
+      this.interval = this.options.interval;
+      if (!this.spawn()) {
+        this.map.waveFinished(this);
+      }
+    }
+    this.interval = this.interval - 1;
+  },
+  spawn: function() {
+    new (this.options.creeps[this.count % this.options.creeps.length])(this.map);
+    this.count++;
+    return this.count < this.options.count;
   }
 });
 
