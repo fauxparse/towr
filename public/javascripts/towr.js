@@ -48,20 +48,23 @@ var Map = new Class({
   },
   start: function() {
     var self = this;
-    if (!this.paused && !this.waves.length) {
+    if (!this.waves.length && !this.creeps.length) {
       new Wave(this).start();
     }
     this.paused = false;
-    (function(){
-      self.update();
-      self.ticker = setTimeout(arguments.callee, TICK);
-    })();
+    if (!self.ticker) {
+      (function(){
+        self.update();
+        self.ticker = setTimeout(arguments.callee, TICK);
+      })();
+    }
     this.buttons.start.hide();
     this.buttons.pause.show();
   },
   pause: function() {
     this.paused = true;
     clearTimeout(this.ticker);
+    this.ticker = false;
     this.buttons.start.show();
     this.buttons.pause.hide();
   },
