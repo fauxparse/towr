@@ -79,10 +79,22 @@
   -webkit-transform: rotate(90deg);  -moz-transform: rotate(90deg);  text-shadow: rgba(0, 0, 0, 0.5) -1px 0px 1px;
 }
 .cell.entry-4:before, .cell.exit-4:before {
-  -webkit-transform: rotate(180deg); -moz-transform: rotate(180deg); text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 1px;
+  -webkit-transform: rotate(0deg); -moz-transform: rotate(0deg); text-shadow: rgba(0, 0, 0, 0.5) 0px -1px 1px;
 }
 .cell.entry-8:after, .cell.exit-8:after   {
   -webkit-transform: rotate(-90deg); -moz-transform: rotate(-90deg); text-shadow: rgba(0, 0, 0, 0.5) 1px 0px 1px;
+}
+
+.cell.entry-4:before, .cell.exit-4:before {
+  top: 32px;
+  -webkit-border-top-left-radius: 0px;
+  -webkit-border-top-right-radius: 0px;
+  -webkit-border-bottom-left-radius: 4px;
+  -webkit-border-bottom-right-radius: 4px;
+  -moz-border-radius-topleft: 0px;
+  -moz-border-radius-topright: 0px;
+  -moz-border-radius-bottomleft: 4px;
+  -moz-border-radius-bottomright: 4px;
 }
 
 .cell.exit-1:before,
@@ -265,6 +277,15 @@
   width: 32px;
   height: 32px;
   outline: none;
+}
+
+.tower .charge {
+  position: absolute;
+  left: 4px;
+  top: -1px;
+  height: 3px;
+  background: rgba(237, 28, 36, 0.75);
+  z-index: 3;
 }
 
 .tower .base {

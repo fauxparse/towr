@@ -21,9 +21,11 @@ var Map = new Class({
     this.field = element.getElements('.field')[0]
       .addEvents({
         mousemove: function(event) {
-          var xy = self.field.getPosition();
-          var x = event.page.x - xy.x, y = event.page.y - xy.y;
-          self.towers.each(function(tower) { tower.aimAt(x, y) });
+          if (this.paused) {
+            var xy = self.field.getPosition();
+            var x = event.page.x - xy.x, y = event.page.y - xy.y;
+            self.towers.each(function(tower) { tower.aimAt(x, y) });
+          }
           return true;
         },
         mousedown: function() { this.instance.blur(); }
@@ -338,7 +340,7 @@ var Tower = new Class({
     range: 48,
     damage: 10,
     shotPower: 100,
-    chargeRate: 20
+    chargeRate: 10
   },
   initialize: function(map, cell, options) {
     var self = this;
@@ -352,6 +354,7 @@ var Tower = new Class({
         tabindex: -1
       }).inject(cell);
       self.element.instance = self;
+      self.chargeMeter = new Element('div', { 'class': 'charge' }).inject(self.element);
       self.base = self.element.getElement('.base');
       self.turret = self.element.getElement('.turret');
       self.map.towers.push(self);
@@ -379,24 +382,97 @@ var Tower = new Class({
         blur: self.blur
       });
       
+      self.charge = 0;
+      self.charging = false;
+      
       self.pips = new Element('div', { 'class':'pips' }).inject(self.element);
       self.updateView();
     }
   },
   powerUp: function() { return Math.pow(1.1, this.level - 1); },
   range: function() { return this.options.range * this.powerUp(); },
+  damage: function() { return Math.round(this.options.damage * this.powerUp()); },
+  shotPower: function() { return this.options.shotPower * this.powerUp(); },
+  chargeRate: function() { return this.options.chargeRate * this.powerUp(); },
+  update: function() {
+    if (this.charge <= 0 || this.charge < this.options.shotPower) {
+      this.charging = true;
+      // this.target = false;
+    }
+    
+    if (this.target) { this.aimAt(this.target.x, this.target.y); }
+    
+    if (this.charging) {
+      this.charge = Math.min(100, this.charge + this.chargeRate());
+      if (this.charge >= 100) {
+        this.charging = false;
+      }
+    } else if (this.charge >= this.options.shotPower) {
+      this.fireAt(this.getTarget());
+    }
+    this.updateView();
+  },
   updateView: function() {
     this.pips.set('html', '★'.times(this.level));
+    this.chargeMeter.setStyles({ width:this.charge * (this.map.cellSize - 8) / 100 });
+  },
+  getTarget: function() {
+    if (this.target && (!this.map.creeps.contains(this.target) || this.rangeTo(this.target) > this.range())) {
+      this.target = false;
+      this.charging = true;
+    }
+
+    if (!this.target && !this.charging) {
+      this.target = this.chooseTarget(this.creepsInRange());
+    }
+    return this.target;
+  },
+  rangeTo: function(creep) {
+    dx = creep.x - this.x, dy = creep.y - this.y;
+    return Math.sqrt(dx*dx+dy*dy);
+  },
+  creepsInRange: function() {
+    creeps = [];
+    var tower = this, range = this.range();
+    this.map.creeps.each(function(creep) {
+      if ((d = tower.rangeTo(creep)) < range) {
+        creeps.push({ creep:creep, distance:d, health:creep.health });
+      }
+    });
+    return creeps;
+  },
+  chooseTarget: function(creeps) {
+    return creeps.length ? creeps[0].creep : false;
   },
   aimAt: function(x, y) {
     var dy = this.y - y,
         dx = this.x - x,
-        theta = Math.atan2(dy, dx) - Math.PI/2;
+        theta = Math.atan2(dy, dx) - Math.PI/2,
+        theta2 = theta + Math.PI * 2;
+        
+    if (Math.abs(theta2 - this.angle) < Math.abs(theta - this.angle)) {
+      theta = theta2;
+    }
     
     this.turret.setStyles({
       '-webkit-transform': 'rotate(' + theta + 'rad)',
       '-moz-transform': 'rotate(' + theta + 'rad)'
     });
+    this.angle = theta;
+  },
+  fireAt: function(creep) {
+    if (creep) {
+      this.aimAt(creep.x, creep.y);
+      this.hit(creep);
+      this.charge -= this.shotPower();
+      this.updateView();
+    }
+  },
+  hit: function(creep) {
+    if (!creep.hit(this.damage())) {
+      this.target = false;
+      this.charging = true;
+    }
   },
   focus: function(event) {
     var self = this.instance;
@@ -432,10 +508,22 @@ var Towers = {
   LaserTower: new Class({
     Extends: Tower,
     Name: 'LaserTower',
+    options: {
+      range: 48,
+      damage: 1,
+      shotPower: 2,
+      chargeRate: 5
+    },
     aimAt: function(x, y) {}
   }),
   IceTower: new Class({
     Extends: Tower,
+    options: {
+      range: 40,
+      damage: 2,
+      shotPower: 100,
+      chargeRate: 5
+    },
     Name: 'IceTower',
   }),
   GrenadeTower: new Class({
@@ -552,6 +640,16 @@ var Creep = new Class({
   },
   speed: function() {
     return this.options.speed;
+  },
+  hit: function(damage) {
+    this.health = Math.max(this.health - damage, 0)
+    this.healthBar.set('html', this.health);
+    if (this.health <= 0) {
+      this.die();
+      return false;
+    } else {
+      return true;
+    }
   },
   die: function() {
     this.map.creeps.erase(this);
