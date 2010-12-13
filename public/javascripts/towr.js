@@ -361,7 +361,7 @@ var Tower = new Class({
       self.x = (cell.x * 2 + 1) * self.map.cellSize / 2;
       self.y = (cell.y * 2 + 1) * self.map.cellSize / 2;
       self.level = 1;
-      new Element('div', { 'class':'effect' }).inject(this.turret);
+      self.effect = new Element('div', { 'class':'effect' }).inject(self.turret);
       
       self.controls = new Element('div', {
         'class': 'controls',
@@ -504,6 +504,13 @@ var Towers = {
   RifleTower: new Class({
     Extends: Tower,
     Name: 'RifleTower',
+    fireAt: function(creep) {
+      this.parent(creep);
+      if (creep) {
+        this.effect.set('morph', { duration: 100 })
+          .morph({ opacity:[1.0, 0.0] });
+      }
+    }
   }),
   LaserTower: new Class({
     Extends: Tower,

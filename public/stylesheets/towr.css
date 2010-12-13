@@ -449,6 +449,7 @@
   height: 8px;
   width: 4px;
   margin: 0px -2px;
+  opacity: 1;
 }
 
 .LaserTower .base:before,
