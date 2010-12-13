@@ -722,6 +722,20 @@
   -moz-transform-origin: 50% 16px;
 }
 
+.creep .overlay {
+  position: absolute;
+  left: -8px;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+}
+
+.creep .IceEffect {
+  background: #00aeef;
+}
+
 /*}}}*/
 
 /* Editing {{{ */

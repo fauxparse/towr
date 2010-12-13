@@ -532,10 +532,105 @@ var Towers = {
       chargeRate: 5
     },
     Name: 'IceTower',
+    hit: function(creep) {
+      this.parent(creep);
+      effects = creep.effects.filter(function(e) { return instanceOf(e, Effects.IceEffect) && e.tower == this; });
+      if (effects.length > 0) {
+        effects[0].createdAt = (new Date()).getTime();
+      } else {
+        new Effects.IceEffect(creep, this, { affect: (this.level / 10.0) + 0.5, duration: 3000 * this.powerUp() });
+      }
+      this.target = false;
+    },
+    chooseTarget: function(creeps) {
+      var fastest = false, topSpeed = 0;
+      creeps.each(function(creep) {
+        speed = creep.creep.applyEffects('speed');
+        if (speed > topSpeed) {
+          fastest = creep.creep;
+          topSpeed = speed;
+        }
+      });
+      return fastest;
+    }
   }),
   GrenadeTower: new Class({
     Extends: Tower,
     Name: 'GrenadeTower',
+    options: {
+      range: 100,
+      damage: 10,
+      shotPower: 100,
+      chargeRate: 5,
+      splash: 40
+    },
+    fireAt: function(creep) {
+      if (creep) {
+        this.aimAt(creep.x, creep.y);
+        this.effect.set('morph', { duration: 100 })
+          .morph({ opacity:[1.0, 0.0] });
+      }
+      this.explode.delay(1000, this, [ creep.x, creep.y ]);
+      this.charge -= this.shotPower();
+      this.updateView();
+    },
+    splash: function() {
+      return this.options.splash * this.powerUp();
+    },
+    explode: function(x, y) {
+      var range = this.splash(), self = this;
+      this.map.creeps.each(function(creep) {
+        var dx = creep.x - x, dy = creep.y - y;
+        if (Math.sqrt(dx * dx + dy * dy) < range) {
+          creep.hit(self.damage());
+        }
+      });
+    }
+  })
+};
+
+var Effect = new Class({
+  Implements: Options,
+  options: {
+    duration: 1000.0,
+    affect: 0.5
+  },
+  initialize: function(creep, tower, options) {
+    this.creep = creep;
+    this.setOptions(options || {});
+    this.createdAt = (new Date()).getTime();
+    creep.effects.push(this);
+    this.overlay = new Element('div', {
+      'class': 'overlay ' + this.Name
+    }).inject(creep.element);
+  },
+  apply: function(property) {},
+  stop: function() {
+    this.creep.effects.erase(this);
+    this.overlay.destroy();
+  }
+});
+
+var Effects = {
+  IceEffect: new Class({
+    Extends: Effect,
+    Name: 'IceEffect',
+    apply: function(property) {
+      this.parent(property);
+      if (property == 'speed') {
+        if ((t = (new Date()).getTime() - this.createdAt) < this.options.duration) {
+          var v = t * t / (this.options.duration * this.options.duration);
+          v = (v * this.options.affect) + 1 - this.options.affect;
+          this.overlay.setStyles({ opacity: (1.0 - v) * 0.9 });
+          return v;
+        } else {
+          this.stop();
+          return 1.0;
+        }
+      } else {
+        return 1.0;
+      }
+    }
   })
 };
 
@@ -550,6 +645,7 @@ var Creep = new Class({
     var self = this;
     this.setOptions(options);
     this.health = this.options.health;
+    this.effects = [];
     this.enter(map);
   },
   enter: function(map) {
@@ -645,8 +741,15 @@ var Creep = new Class({
     
     this.updatePosition();
   },
+  applyEffects: function(property, initial) {
+    initial = initial || 1.0
+    this.effects.each(function(effect) {
+      initial = initial * effect.apply(property);
+    });
+    return initial;
+  },
   speed: function() {
-    return this.options.speed;
+    return this.applyEffects('speed', this.options.speed);
   },
   hit: function(damage) {
     this.health = Math.max(this.health - damage, 0)
