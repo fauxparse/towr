@@ -36,7 +36,7 @@ var Map = new Class({
       .addEvent('draw', function() {
         self.draw();
       });
-    this.towerCanvas = new Element('canvas').inject(this.field);
+    this.towerCanvas = new Element('canvas', { styles: { 'z-index': 20 } }).inject(this.field);
     this.cellSize = this.field.getElements('.cell')[0].getSize().x;
     this.resizeTo(this.field.getChildren('.row').length, this.field.getChildren('.row')[0].getChildren('.cell').length);
     this.element.setStyles({ width: (this.columns * this.cellSize) + 'px' });
@@ -45,6 +45,7 @@ var Map = new Class({
     this.creeps = [];
     this.waves = [];
     this.life = this.options.life;
+    this.gfx = [];
     
     this.createToolbar();
   },
@@ -71,9 +72,14 @@ var Map = new Class({
     this.buttons.pause.hide();
   },
   update: function() {
+    this.towerCanvas.set('width', this.width); 
+    
     this.waves.each(function(wave) { wave.update(); });
     this.towers.each(function(tower) { tower.update(); });
     this.creeps.each(function(creep) { creep.update(); });
+    
+    var context = this.towerCanvas.getContext('2d');
+    this.gfx.each(function(gfx) { gfx.draw(context); });
     
     if (!this.creeps.length) {
       this.pause();
@@ -107,6 +113,7 @@ var Map = new Class({
       j < self.rows ? re[j].show() : re[j].hide();
     }
     var w = this.columns * this.cellSize, h = this.rows * this.cellSize;
+    this.width = w;
     this.element.getElements('canvas').each(function(canvas) { canvas.set('width', w).set('height', h); });
     this.canvas.fireEvent('draw');
   },
@@ -521,7 +528,25 @@ var Towers = {
       shotPower: 2,
       chargeRate: 5
     },
-    aimAt: function(x, y) {}
+    chooseTarget: function(creeps) {
+      return creeps.length ? creeps[creeps.length - 1].creep : false;
+    },
+    update: function() {
+      this.parent();
+      if (this.charging) { this.target = false; }
+    },
+    aimAt: function(x, y) {},
+    fireAt: function(creep) {
+      this.parent(creep);
+      var context = this.map.towerCanvas.getContext('2d');
+      context.lineWidth = this.level * 2 + 0.5;
+      context.lineCap = 'round';
+      context.strokeStyle = 'rgba(237, 28, 36, 0.5)';
+      context.beginPath();
+      context.moveTo(this.x, this.y);
+      context.lineTo(creep.x, creep.y);
+      context.stroke();
+    }
   }),
   IceTower: new Class({
     Extends: Tower,
@@ -562,23 +587,26 @@ var Towers = {
       damage: 10,
       shotPower: 100,
       chargeRate: 5,
-      splash: 40
+      splash: 40,
+      hangTime: 500
     },
     fireAt: function(creep) {
       if (creep) {
         this.aimAt(creep.x, creep.y);
         this.effect.set('morph', { duration: 100 })
           .morph({ opacity:[1.0, 0.0] });
+        (new GFX.Bullet(this.map, { x: creep.x, y: creep.y, towerX: this.x + 8 * Math.cos(this.angle - Math.PI / 2), towerY: this.y + 8 * Math.sin(this.angle - Math.PI / 2), duration: 500 }));
+        this.explode.delay(this.options.hangTime, this, [ creep.x, creep.y ]);
+        this.charge -= this.shotPower();
+        this.updateView();
       }
-      this.explode.delay(1000, this, [ creep.x, creep.y ]);
-      this.charge -= this.shotPower();
-      this.updateView();
     },
     splash: function() {
       return this.options.splash * this.powerUp();
     },
     explode: function(x, y) {
       var range = this.splash(), self = this;
+      (new GFX.Crater(this.map, { x: x, y: y, range: range, duration: 1000 }));
       this.map.creeps.each(function(creep) {
         var dx = creep.x - x, dy = creep.y - y;
         if (Math.sqrt(dx * dx + dy * dy) < range) {
@@ -753,7 +781,7 @@ var Creep = new Class({
   },
   hit: function(damage) {
     this.health = Math.max(this.health - damage, 0)
-    this.healthBar.set('html', this.health);
+    this.healthBar.set('html', this.health).morph({ color: ['#ed1c24','#333'] });
     if (this.health <= 0) {
       this.die();
       return false;
@@ -764,10 +792,7 @@ var Creep = new Class({
   die: function() {
     this.map.creeps.erase(this);
     this.element.morph({ opacity:[1.0, 0.0] });
-    this._destroy.pass(this.element).delay(1000);
-  },
-  _destroy: function(element) {
-    element.destroy();
+    this.element.destroy.delay(1000, this.element);
   },
   escape: function() {
     this.map.depleteLife(this.health);
@@ -804,6 +829,59 @@ var Wave = new Class({
     new (this.options.creeps[this.count % this.options.creeps.length])(this.map);
     this.count++;
     return this.count < this.options.count;
+  }
+});
+
+var GFX = new Class({
+  Implements: Options,
+  options: {
+    duration: 1000
+  },
+  initialize: function(map, options) {
+    this.setOptions(options || {});
+    this.map = map;
+    this.map.gfx.push(this);
+    this.createdAt = (new Date()).getTime();
+  },
+  draw: function(context) { },
+  destroy: function() {
+    this.map.gfx.erase(this);
+  }
+});
+
+GFX.Bullet = new Class({
+  Extends: GFX,
+  draw: function(context) {
+    t = (new Date()).getTime() - this.createdAt;
+    if (t < this.options.duration) {
+      var dx = this.options.x - this.options.towerX,
+          dy = this.options.y - this.options.towerY,
+          x = (dx * t) / this.options.duration + this.options.towerX,
+          y = (dy * t) / this.options.duration + this.options.towerY;
+      context = context || this.map.towerCanvas.getContext('2d');
+      context.fillStyle = '#333';
+      context.beginPath();
+      context.arc(x, y, 2, 0, Math.PI * 2);
+      context.fill();
+    } else {
+      this.destroy();
+    }
+  }
+});
+
+GFX.Crater = new Class({
+  Extends: GFX,
+  draw: function(context) {
+    t = (new Date()).getTime() - this.createdAt;
+    if (t < this.options.duration) {
+      context = context || this.map.towerCanvas.getContext('2d');
+      context.fillStyle = 'rgba(0, 0, 0, ' + (0.15 * (1 - (t / this.options.duration))) + ')';
+      context.beginPath();
+      context.arc(this.options.x, this.options.y, this.options.range, 0, Math.PI * 2);
+      context.fill();
+    } else {
+      this.destroy();
+    }
   }
 });
 
